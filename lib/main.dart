@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:pillgrimage/register_view.dart';
+import 'package:pillgrimage/userRegistration.dart';
 
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MaterialApp(
-      title: 'Pillgrimage',
+      title: 'pillgrimage',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
-      home: const RegisterView(), // i change here to register view
+      home: const UserRegistrationView(), // i change here to register view
     ),
   );
 }
-
-

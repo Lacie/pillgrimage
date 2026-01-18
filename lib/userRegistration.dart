@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import "package:firebase_auth/firebase_auth.dart";
 import 'firebase_options.dart';
 
-// Registration form
-class RegisterView extends StatefulWidget {
-  const RegisterView({super.key});
+// New User Registration Form
+class UserRegistrationView extends StatefulWidget {
+  const UserRegistrationView({super.key});
 
   @override
-  State<RegisterView> createState() => _RegisterViewState();
+  State<UserRegistrationView> createState() => _UserRegistrationState();
 }
 
 // Review State
-class _RegisterViewState extends State<RegisterView> {
+class _UserRegistrationState extends State<UserRegistrationView> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
 
@@ -62,7 +62,7 @@ class _RegisterViewState extends State<RegisterView> {
                           email: email,
                           password: password,
                         );
-                        print(userCredentials);
+                        // TODO Write to FireStore
                       },
                       child: const Text("Registering"),
                     ),
@@ -71,7 +71,6 @@ class _RegisterViewState extends State<RegisterView> {
               default:
                 return const Text("Loading...");
             }
-
           }
       ),
     );

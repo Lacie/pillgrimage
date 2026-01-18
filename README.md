@@ -47,14 +47,6 @@
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <!-- <li><a href="#roadmap">Roadmap</a></li> -->
     <li><a href="#team">Team</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -85,38 +77,6 @@
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- GETTING STARTED -->
-
-## Getting Started
-
-This project is currently in active development. The instructions below will help you run the MVP locally, which includes user authentication, medication scheduling, notifications, and medication tracking. OCR and computer vision features are planned but not yet implemented.
-
-### Prerequisites
-
-`#TODO`
-
-<!-- USAGE EXAMPLES -->
-
-## Usage
-
-`#TODO`
-
-<!-- _For more examples, please refer to the [Documentation](https://example.com)_ -->
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- ROADMAP -->
-<!-- ## Roadmap
-
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
-
-See the [open issues](https://github.com/Lacie/pillgrimage/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
--->
 
 <!-- CONTRIBUTORS -->
 

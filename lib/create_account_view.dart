@@ -8,11 +8,11 @@ class CreateAccountView extends StatefulWidget {
   const CreateAccountView({super.key});
 
   @override
-  State<CreateAccountView> createState() => _UserRegistrationState();
+  State<CreateAccountView> createState() => _CreateAccountState();
 }
 
 // Review State
-class _UserRegistrationState extends State<CreateAccountView> {
+class _CreateAccountState extends State<CreateAccountView> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
 

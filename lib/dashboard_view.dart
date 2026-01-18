@@ -249,7 +249,8 @@ class _DashboardViewState extends State<DashboardView> {
   Widget _buildMedicationCard(Map<String, dynamic> data) {
     final String name = data['name'] ?? 'Unknown Medication';
     final String dose = data['dose'] ?? '';
-    final String type = data['type'] == 'RX' ? 'Prescription' : 'OTC';
+    final String type = data['type'] == 'RX' ? 'RX' : 'OTC';
+    final String notificationEmail = data['notification_email'] ?? '';
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -271,6 +272,9 @@ class _DashboardViewState extends State<DashboardView> {
                 if (dose.isNotEmpty)
                   Text("Dose: $dose",
                       style: const TextStyle(color: Colors.white, fontSize: 16)),
+                if (notificationEmail.isNotEmpty)
+                  Text("Caretaker: $notificationEmail",
+                      style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12, fontStyle: FontStyle.italic)),
               ],
             ),
           ),

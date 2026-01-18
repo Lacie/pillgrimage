@@ -89,7 +89,7 @@
 
 ## Getting Started
 
-`#TODO`
+This project is currently in active development. The instructions below will help you run the MVP locally, which includes user authentication, medication scheduling, notifications, and medication tracking. OCR and computer vision features are planned but not yet implemented.
 
 ### Prerequisites
 

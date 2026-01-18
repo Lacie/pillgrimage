@@ -132,11 +132,46 @@ See the [open issues](https://github.com/Lacie/pillgrimage/issues) for a full li
 
 <!-- CONTRIBUTORS -->
 
-## Contributors
+## Team
 
-<a href="https://github.com/Lacie/pillgrimage/graphs/contributors">
+<!-- <a href="https://github.com/Lacie/pillgrimage/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Lacie/pillgrimage" alt="contrib.rocks image" />
-</a>
+</a> -->
+
+
+<div align="center">
+  <h3>🩸 Code-Blooded Baddies 🩸</h3>
+  <p><i>Solving problems with style and precision.</i></p>
+  <table border="0">
+    <tr>
+      <td align="center">
+        <a href="https://github.com/Lacie">
+          <img src="https://github.com/Lacie.png" width="80px;" style="border-radius: 50%;"/>
+        </a><br />
+        <sub><a href="https://github.com/Lacie"><b>Lacie</b></a><br /><font color="gray">Lacie</font></sub>
+      </td>
+      <td align="center">
+        <a href="https://github.com/go-gitbread">
+          <img src="https://github.com/go-gitbread.png" width="80px;" style="border-radius: 50%;"/>
+        </a><br />
+        <sub><a href="https://github.com/go-gitbread"><b>go-gitbread</b></a><br /><font color="gray">Jia Yin Yan</font></sub>
+      </td>
+      <td align="center">
+        <a href="https://github.com/maevelehi">
+          <img src="https://github.com/maevelehi.png" width="80px;" style="border-radius: 50%;"/>
+        </a><br />
+        <sub><a href="https://github.com/maevelehi"><b>maevelehi</b></a><br /><font color="gray">Maeve Le</font></sub>
+      </td>
+      <td align="center">
+        <a href="https://github.com/nite-ninja">
+          <img src="https://github.com/nite-ninja.png" width="80px;" style="border-radius: 50%;"/>
+        </a><br />
+        <sub><a href="https://github.com/nite-ninja"><b>nite-ninja</b></a><br /><font color="gray">Neerja</font></sub>
+      </td>
+    </tr>
+  </table>
+</div>
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

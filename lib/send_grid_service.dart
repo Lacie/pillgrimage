@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:pillgrimage/api_keys.dart';
 
@@ -39,9 +40,13 @@ class SendGridService {
     );
 
     if (response.statusCode == 202) {
-      print("Success: Email is being processed.");
+      if (kDebugMode) {
+        print("Success: Email is being processed.");
+      }
     } else {
-      print("Error ${response.statusCode}: ${response.body}");
+      if (kDebugMode) {
+        print("Error ${response.statusCode}: ${response.body}");
+      }
     }
   }
 }

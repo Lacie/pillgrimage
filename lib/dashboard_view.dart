@@ -75,8 +75,10 @@ class _DashboardViewState extends State<DashboardView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset(
-              'assets/launcher_icon.png',
-              height: 32,
+              'assets/title_bar_logo.png',
+              height: 28,
+              width: 28,
+              fit: BoxFit.scaleDown,
               errorBuilder: (context, error, stackTrace) => const Icon(Icons.medication, size: 32, color: Colors.blue),
             ),
             const SizedBox(width: 8),

@@ -74,6 +74,7 @@
 - **Flutter** — Cross-platform mobile development (Android)
 - **Firebase Authentication** — Secure user sign-in and account management
 - **Cloud Firestore** — Real-time database for users, medications, and history
+- **SendGrid (Twilio)** — Sends automated email alerts to caretakers when medications are missed.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -101,7 +102,7 @@
         <a href="https://github.com/go-gitbread">
           <img src="https://github.com/go-gitbread.png" width="80px;" style="border-radius: 50%;"/>
         </a><br />
-        <sub><a href="https://github.com/go-gitbread"><b>go-gitbread</b></a><br /><font color="gray">Jia Yin Yan</font></sub>
+        <sub><a href="https://github.com/go-gitbread"><b>go-gitbread</b></a><br /><font color="gray">Jia Yin (Jossie) Yan</font></sub>
       </td>
       <td align="center">
         <a href="https://github.com/maevelehi">

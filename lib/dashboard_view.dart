@@ -201,7 +201,7 @@ class _DashboardViewState extends State<DashboardView> {
   String _getAppBarTitle() {
     switch (_selectedIndex) {
       case 0:
-        return "History";
+        return "Medication History";
       case 1:
         return "Dashboard";
       case 2:

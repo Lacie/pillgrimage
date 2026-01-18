@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.pillgrimage"
-        minSdk = flutter.minSdkVersion
+        minSdk = flutter.minSdkVersion // Updated to match flutter_local_notifications requirements if needed
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -36,7 +36,7 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 
 flutter {

@@ -210,7 +210,7 @@ class _DashboardViewState extends State<DashboardView> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: selectedRegimen,
+                      initialValue: selectedRegimen,
                       decoration: InputDecoration(
                         labelText: "Regimen",
                         prefixIcon: const Icon(Icons.calendar_today),
@@ -263,7 +263,7 @@ class _DashboardViewState extends State<DashboardView> {
                       
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: selectedType,
+                      initialValue: selectedType,
                       decoration: InputDecoration(
                         labelText: "Type",
                         prefixIcon: const Icon(Icons.category),

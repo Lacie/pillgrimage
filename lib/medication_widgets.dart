@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pillgrimage/medication_model.dart';
 import 'package:pillgrimage/notification_service.dart';
 
@@ -62,6 +63,13 @@ String formatFrequency(Medication med) {
 Future<void> takeMedication(BuildContext context, Medication med) async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return;
+
+  final ImagePicker picker = ImagePicker();
+  final XFile? image = await picker.pickImage(source: ImageSource.camera);
+
+  if (image == null) {
+    return; // User canceled the camera
+  }
 
   // Check if the medication is scheduled early (more than 1 hour from now)
   bool isEarly = false;
@@ -208,7 +216,6 @@ class MedicationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeColor = isOverdue ? Colors.red : Colors.blue;
-    final user = FirebaseAuth.instance.currentUser;
 
     return GestureDetector(
       onTap: () => takeMedication(context, med),

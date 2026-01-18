@@ -1,14 +1,4 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
-
 <a id="readme-top"></a>
-
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
 
 <!-- PROJECT SHIELDS -->
 <!--
@@ -34,17 +24,24 @@
   </a>
 
   <p align="center">
-    #TODO project_description
+    <!-- <br />
+    <a href="https://github.com/Lacie/pillgrimage"><strong>Explore the docs »</strong></a>
     <br />
-    <!-- <a href="https://github.com/Lacie/pillgrimage"><strong>Explore the docs »</strong></a> -->
     <br />
+    <a href="https://github.com/Lacie/pillgrimage">View Demo</a>
+     &middot;
+    <a href="https://github.com/Lacie/pillgrimage/issues/new?labels=bug&template=bug-report---.md">Report Bug</a> 
+     &middot;
+     <a href="https://github.com/Lacie/pillgrimage/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>  -->
+    Pillgrimage is a medication check-in app that helps people take their meds on time—and be accountable when it matters.  
+    It sends persistent, snoozable reminders, verifies medication intake using OCR/computer vision, and notifies a trusted caretaker if doses are missed.  
+    Designed for daily prescriptions, PRNs, and supplements, Pillgrimage turns medication adherence into a simple, trackable journey toward better health.
     <br />
-    <!-- <a href="https://github.com/Lacie/pillgrimage">View Demo</a> -->
-    <!-- &middot; -->
-    <!-- <a href="https://github.com/Lacie/pillgrimage/issues/new?labels=bug&template=bug-report---.md">Report Bug</a> -->
-    <!-- &middot; -->
-    <!-- <a href="https://github.com/Lacie/pillgrimage/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a> -->
   </p>
+
+  <p align="center">
+  
+</p>
 </div>
 
 <!-- TABLE OF CONTENTS -->
@@ -61,7 +58,6 @@
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
@@ -101,12 +97,6 @@
 
 `#TODO`
 
-### Installation
-
-`#TODO`
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <!-- USAGE EXAMPLES -->
 
 ## Usage
@@ -137,7 +127,6 @@ See the [open issues](https://github.com/Lacie/pillgrimage/issues) for a full li
 <!-- <a href="https://github.com/Lacie/pillgrimage/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Lacie/pillgrimage" alt="contrib.rocks image" />
 </a> -->
-
 
 <div align="center">
   <h3>🩸 Code-Blooded Baddies 🩸</h3>
@@ -171,7 +160,6 @@ See the [open issues](https://github.com/Lacie/pillgrimage/issues) for a full li
     </tr>
   </table>
 </div>
-
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

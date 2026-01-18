@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pillgrimage/medication_model.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -31,13 +32,26 @@ class _DashboardViewState extends State<DashboardView> {
 
     final nameController = TextEditingController();
     final doseController = TextEditingController();
-    final frequencyController = TextEditingController();
-    final emailController = TextEditingController();
+    final gapController = TextEditingController();
+    
     String selectedType = 'RX';
+    String selectedRegimen = 'REG';
+    
+    // For Regular regimen
+    bool takeMorning = false;
+    bool takeAfternoon = false;
+    bool takeNight = false;
 
     final Map<String, String> typeOptions = {
       'RX': 'Prescription',
       'OTC': 'Over the counter',
+      'SUPP': 'Supplement',
+      'OTHER': 'Other',
+    };
+
+    final Map<String, String> regimenOptions = {
+      'REG': 'Regularly',
+      'PRN': 'As needed',
     };
 
     return showDialog(
@@ -70,25 +84,58 @@ class _DashboardViewState extends State<DashboardView> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    TextField(
-                      controller: frequencyController,
+                    DropdownButtonFormField<String>(
+                      value: selectedRegimen,
                       decoration: InputDecoration(
-                        labelText: "Frequency (seconds)",
-                        prefixIcon: const Icon(Icons.timer),
+                        labelText: "Regimen",
+                        prefixIcon: const Icon(Icons.calendar_today),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      keyboardType: TextInputType.number,
+                      items: regimenOptions.entries.map((entry) {
+                        return DropdownMenuItem(value: entry.key, child: Text(entry.value));
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setDialogState(() => selectedRegimen = value);
+                        }
+                      },
                     ),
                     const SizedBox(height: 16),
-                    TextField(
-                      controller: emailController,
-                      decoration: InputDecoration(
-                        labelText: "Notification Email",
-                        prefixIcon: const Icon(Icons.email),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    
+                    if (selectedRegimen == 'REG') ...[
+                      const Text("When do you take this?", style: TextStyle(fontWeight: FontWeight.bold)),
+                      CheckboxListTile(
+                        title: const Text("Morning (8:00 AM)"),
+                        value: takeMorning,
+                        onChanged: (val) => setDialogState(() => takeMorning = val!),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        dense: true,
                       ),
-                      keyboardType: TextInputType.emailAddress,
-                    ),
+                      CheckboxListTile(
+                        title: const Text("Afternoon (1:00 PM)"),
+                        value: takeAfternoon,
+                        onChanged: (val) => setDialogState(() => takeAfternoon = val!),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        dense: true,
+                      ),
+                      CheckboxListTile(
+                        title: const Text("Night (9:00 PM)"),
+                        value: takeNight,
+                        onChanged: (val) => setDialogState(() => takeNight = val!),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        dense: true,
+                      ),
+                    ] else
+                      TextField(
+                        controller: gapController,
+                        decoration: InputDecoration(
+                          labelText: "Minimum Gap (hours)",
+                          prefixIcon: const Icon(Icons.hourglass_empty),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                      
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       value: selectedType,
@@ -98,10 +145,7 @@ class _DashboardViewState extends State<DashboardView> {
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       items: typeOptions.entries.map((entry) {
-                        return DropdownMenuItem(
-                          value: entry.key,
-                          child: Text(entry.value),
-                        );
+                        return DropdownMenuItem(value: entry.key, child: Text(entry.value));
                       }).toList(),
                       onChanged: (value) {
                         if (value != null) {
@@ -126,19 +170,68 @@ class _DashboardViewState extends State<DashboardView> {
                   onPressed: () async {
                     if (nameController.text.isEmpty) return;
 
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(user.uid)
-                        .collection('medications')
-                        .add({
-                      '__created': FieldValue.serverTimestamp(),
-                      '__updated': FieldValue.serverTimestamp(),
-                      'name': nameController.text.trim(),
-                      'dose': doseController.text.trim(),
-                      'frequency_seconds': int.tryParse(frequencyController.text) ?? 0,
-                      'notification_email': emailController.text.trim(),
-                      'type': selectedType,
-                    });
+                    final String name = nameController.text.trim();
+                    final String dose = doseController.text.trim();
+
+                    if (selectedRegimen == 'REG') {
+                      final List<int> scheduledHours = [];
+                      if (takeMorning) scheduledHours.add(8);
+                      if (takeAfternoon) scheduledHours.add(13);
+                      if (takeNight) scheduledHours.add(21);
+
+                      if (scheduledHours.isEmpty) return;
+
+                      // Create multiple entries or one entry with logic. 
+                      // For now, let's create a medication entry for EACH scheduled time
+                      // so they show up individually in the dashboard.
+                      
+                      for (int hour in scheduledHours) {
+                        DateTime nextTime = DateTime(
+                          DateTime.now().year,
+                          DateTime.now().month,
+                          DateTime.now().day,
+                          hour,
+                        );
+                        
+                        // If the time has already passed today, schedule for tomorrow
+                        if (nextTime.isBefore(DateTime.now())) {
+                          nextTime = nextTime.add(const Duration(days: 1));
+                        }
+
+                        final newMed = Medication(
+                          medName: name,
+                          medType: selectedType,
+                          regimenType: selectedRegimen,
+                          dosage: dose,
+                          isCurrent: true,
+                          userId: user.uid,
+                          frequencyHours: 24, // Once a day per specific time slot
+                          nextScheduledUtc: nextTime,
+                        );
+
+                        await FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(user.uid)
+                            .collection('medications')
+                            .add(newMed.toFirestore());
+                      }
+                    } else {
+                      final int? gap = int.tryParse(gapController.text);
+                      final newMed = Medication(
+                        medName: name,
+                        medType: selectedType,
+                        regimenType: selectedRegimen,
+                        dosage: dose,
+                        isCurrent: true,
+                        userId: user.uid,
+                        minGapHours: gap,
+                      );
+                      await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(user.uid)
+                          .collection('medications')
+                          .add(newMed.toFirestore());
+                    }
 
                     if (context.mounted) Navigator.pop(context);
                   },
@@ -249,7 +342,7 @@ class _DashboardViewState extends State<DashboardView> {
             children: [
               _buildWelcomeHeader(userName),
               const SizedBox(height: 25),
-              _buildMedicationList(user?.uid, limit: 2),
+              _buildUpcomingMedicationsSection(user?.uid),
               const SizedBox(height: 25),
             ],
           ),
@@ -271,11 +364,8 @@ class _DashboardViewState extends State<DashboardView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //const Text("All Medications",
-              //  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
             _buildMedicationList(user?.uid),
-            // Extra spacing at bottom to ensure scrollbar is useful
             const SizedBox(height: 40),
           ],
         ),
@@ -295,6 +385,70 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
+  Widget _buildUpcomingMedicationsSection(String? userId) {
+    if (userId == null) return const SizedBox.shrink();
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('medications')
+          .where('is_current', isEqualTo: true)
+          .where('regimen_type', isEqualTo: 'REG')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Text("Error: ${snapshot.error}");
+        }
+
+        final now = DateTime.now();
+        final tomorrow = now.add(const Duration(hours: 24));
+
+        // Filter and sort in memory to avoid complex composite index requirements
+        final List<Medication> upcomingMeds = snapshot.data!.docs
+            .map((doc) => Medication.fromFirestore(doc))
+            .where((med) =>
+                med.nextScheduledUtc != null &&
+                med.nextScheduledUtc!.isAfter(now) &&
+                med.nextScheduledUtc!.isBefore(tomorrow))
+            .toList();
+
+        upcomingMeds.sort((a, b) => a.nextScheduledUtc!.compareTo(b.nextScheduledUtc!));
+
+        if (upcomingMeds.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Center(
+              child: Text(
+                "No medications due in the next 24 hours.",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
+            ),
+          );
+        }
+
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: upcomingMeds.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            return _buildMedicationCard(upcomingMeds[index]);
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildMedicationList(String? userId, {int? limit}) {
     if (userId == null) return const SizedBox.shrink();
 
@@ -302,7 +456,7 @@ class _DashboardViewState extends State<DashboardView> {
         .collection('users')
         .doc(userId)
         .collection('medications')
-        .orderBy('__created', descending: true);
+        .where('is_current', isEqualTo: true);
 
     if (limit != null) {
       query = query.limit(limit);
@@ -316,7 +470,7 @@ class _DashboardViewState extends State<DashboardView> {
         }
 
         if (snapshot.hasError) {
-          return const Text("Error loading medications");
+          return Text("Error: ${snapshot.error}");
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -342,20 +496,15 @@ class _DashboardViewState extends State<DashboardView> {
           itemCount: snapshot.data!.docs.length,
           separatorBuilder: (context, index) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
-            final medData = snapshot.data!.docs[index].data() as Map<String, dynamic>;
-            return _buildMedicationCard(medData);
+            final med = Medication.fromFirestore(snapshot.data!.docs[index]);
+            return _buildMedicationCard(med);
           },
         );
       },
     );
   }
 
-  Widget _buildMedicationCard(Map<String, dynamic> data) {
-    final String name = data['name'] ?? 'Unknown Medication';
-    final String dose = data['dose'] ?? '';
-    final String type = data['type'] == 'RX' ? 'RX' : 'OTC';
-    final String notificationEmail = data['notification_email'] ?? '';
-
+  Widget _buildMedicationCard(Medication med) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -368,23 +517,40 @@ class _DashboardViewState extends State<DashboardView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name,
+                Text(med.medName,
                     style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                Text(type,
+                Text(med.dosage,
                     style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14)),
-                const SizedBox(height: 5),
-                if (dose.isNotEmpty)
-                  Text("Dose: $dose",
-                      style: const TextStyle(color: Colors.white, fontSize: 16)),
-                if (notificationEmail.isNotEmpty)
-                  Text("Caretaker: $notificationEmail",
-                      style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12, fontStyle: FontStyle.italic)),
+                const SizedBox(height: 8),
+                if (med.regimenType == 'REG' && med.nextScheduledUtc != null)
+                  Text("Next: ${_formatDateTime(med.nextScheduledUtc!)}",
+                      style: const TextStyle(color: Colors.white, fontSize: 14))
+                else if (med.regimenType == 'PRN')
+                  const Text("Take as needed",
+                      style: TextStyle(color: Colors.white, fontSize: 14)),
               ],
             ),
           ),
-          const Icon(Icons.medication, color: Colors.white, size: 40),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              med.medType == 'SUPP' ? Icons.spa : Icons.medication,
+              color: Colors.white,
+              size: 30,
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  String _formatDateTime(DateTime dt) {
+    final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
+    final amPm = dt.hour >= 12 ? 'PM' : 'AM';
+    return "$hour:${dt.minute.toString().padLeft(2, '0')} $amPm";
   }
 }

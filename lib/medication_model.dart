@@ -9,9 +9,9 @@ class Medication {
   final bool isCurrent;
   final String userId;
   final DateTime? nextScheduledUtc;
+  final List<DateTime>? doseSchedule; // List of scheduled times for REG meds
   final DateTime? lastTakenUtc;
-  final int? minGapHours;
-  final int? frequencyHours;
+  final int? minGapHours; // For PRN meds
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -24,9 +24,9 @@ class Medication {
     required this.isCurrent,
     required this.userId,
     this.nextScheduledUtc,
+    this.doseSchedule,
     this.lastTakenUtc,
     this.minGapHours,
-    this.frequencyHours,
     this.createdAt,
     this.updatedAt,
   });
@@ -43,9 +43,11 @@ class Medication {
       isCurrent: data['is_current'] ?? true,
       userId: data['user_id'] ?? '',
       nextScheduledUtc: (data['next_scheduled_utc'] as Timestamp?)?.toDate(),
+      doseSchedule: (data['dose_schedule'] as List<dynamic>?)
+          ?.map((e) => (e as Timestamp).toDate())
+          .toList(),
       lastTakenUtc: (data['last_taken_utc'] as Timestamp?)?.toDate(),
       minGapHours: data['min_gap_hours'] as int?,
-      frequencyHours: data['frequency_hours'] as int?,
       createdAt: (data['__created'] as Timestamp?)?.toDate(),
       updatedAt: (data['__updated'] as Timestamp?)?.toDate(),
     );
@@ -60,9 +62,9 @@ class Medication {
       'is_current': isCurrent,
       'user_id': userId,
       'next_scheduled_utc': nextScheduledUtc != null ? Timestamp.fromDate(nextScheduledUtc!) : null,
+      'dose_schedule': doseSchedule?.map((e) => Timestamp.fromDate(e)).toList(),
       'last_taken_utc': lastTakenUtc != null ? Timestamp.fromDate(lastTakenUtc!) : null,
       'min_gap_hours': minGapHours,
-      'frequency_hours': frequencyHours,
       '__created': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
       '__updated': FieldValue.serverTimestamp(),
     };

@@ -30,11 +30,33 @@ class _DashboardViewState extends State<DashboardView> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
+    // Check if the medication is scheduled early (more than 1 hour from now)
+    bool isEarly = false;
+    if (med.regimenType == 'REG' && med.nextScheduledUtc != null) {
+      final now = DateTime.now();
+      if (med.nextScheduledUtc!.isAfter(now.add(const Duration(hours: 1)))) {
+        isEarly = true;
+      }
+    }
+
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Take Medication"),
-        content: Text("Are you sure you want to take ${med.medName} (${med.dosage})?"),
+        title: Text(isEarly ? "Take Early?" : "Take Medication"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Are you sure you want to take ${med.medName} (${med.dosage})?"),
+            if (isEarly) ...[
+              const SizedBox(height: 12),
+              const Text(
+                "This dose is scheduled for later. Are you sure you want to take it early?",
+                style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -42,6 +64,7 @@ class _DashboardViewState extends State<DashboardView> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
+            style: isEarly ? ElevatedButton.styleFrom(backgroundColor: Colors.orange) : null,
             child: const Text("Take"),
           ),
         ],
@@ -69,15 +92,41 @@ class _DashboardViewState extends State<DashboardView> {
             .collection('medication_logs')
             .add(logData);
 
-        // 2. Update the medication record with last_taken and next_scheduled if REG
+        // 2. Update the medication record
         final Map<String, dynamic> updates = {
           'last_taken_utc': now,
           '__updated': now,
         };
 
-        if (med.regimenType == 'REG' && med.frequencyHours != null) {
-          final nextTime = DateTime.now().add(Duration(hours: med.frequencyHours!));
-          updates['next_scheduled_utc'] = Timestamp.fromDate(nextTime);
+        if (med.regimenType == 'REG' && med.doseSchedule != null && med.doseSchedule!.isNotEmpty) {
+          // Logic: Find the next scheduled time in the list that is AFTER the current scheduled one (or today's latest)
+          final baseTime = med.nextScheduledUtc ?? DateTime.now();
+          
+          // Simple logic: sort schedule and pick the next one.
+          // For a true "next step", we'd find the smallest time in doseSchedule that is > baseTime
+          // if none, then smallest time in doseSchedule + 1 day.
+          
+          List<DateTime> sortedSchedule = List.from(med.doseSchedule!);
+          sortedSchedule.sort((a, b) => a.hour.compareTo(b.hour));
+
+          DateTime? nextCandidate;
+          for (var scheduledTime in sortedSchedule) {
+            // Create a DateTime for "today" with that scheduled hour
+            DateTime candidate = DateTime(baseTime.year, baseTime.month, baseTime.day, scheduledTime.hour, scheduledTime.minute);
+            if (candidate.isAfter(baseTime)) {
+              nextCandidate = candidate;
+              break;
+            }
+          }
+
+          // If we found nothing later "today", use the first one "tomorrow"
+          if (nextCandidate == null) {
+            DateTime firstScheduled = sortedSchedule.first;
+            DateTime tomorrow = baseTime.add(const Duration(days: 1));
+            nextCandidate = DateTime(tomorrow.year, tomorrow.month, tomorrow.day, firstScheduled.hour, firstScheduled.minute);
+          }
+          
+          updates['next_scheduled_utc'] = Timestamp.fromDate(nextCandidate);
         }
 
         await FirebaseFirestore.instance
@@ -250,42 +299,46 @@ class _DashboardViewState extends State<DashboardView> {
                     final String dose = doseController.text.trim();
 
                     if (selectedRegimen == 'REG') {
-                      final List<int> scheduledHours = [];
-                      if (takeMorning) scheduledHours.add(8);
-                      if (takeAfternoon) scheduledHours.add(13);
-                      if (takeNight) scheduledHours.add(21);
+                      final List<DateTime> schedule = [];
+                      if (takeMorning) schedule.add(DateTime(2026, 1, 1, 8, 0));
+                      if (takeAfternoon) schedule.add(DateTime(2026, 1, 1, 13, 0));
+                      if (takeNight) schedule.add(DateTime(2026, 1, 1, 21, 0));
 
-                      if (scheduledHours.isEmpty) return;
+                      if (schedule.isEmpty) return;
 
-                      for (int hour in scheduledHours) {
-                        DateTime nextTime = DateTime(
-                          DateTime.now().year,
-                          DateTime.now().month,
-                          DateTime.now().day,
-                          hour,
-                        );
-                        
-                        if (nextTime.isBefore(DateTime.now())) {
-                          nextTime = nextTime.add(const Duration(days: 1));
+                      // Determine initial nextScheduledUtc
+                      schedule.sort((a, b) => a.hour.compareTo(b.hour));
+                      DateTime now = DateTime.now();
+                      DateTime? nextScheduled;
+
+                      for (var time in schedule) {
+                        DateTime candidate = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+                        if (candidate.isAfter(now)) {
+                          nextScheduled = candidate;
+                          break;
                         }
-
-                        final newMed = Medication(
-                          medName: name,
-                          medType: selectedType,
-                          regimenType: selectedRegimen,
-                          dosage: dose,
-                          isCurrent: true,
-                          userId: user.uid,
-                          frequencyHours: 24,
-                          nextScheduledUtc: nextTime,
-                        );
-
-                        await FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(user.uid)
-                            .collection('medications')
-                            .add(newMed.toFirestore());
                       }
+                      if (nextScheduled == null) {
+                        DateTime tomorrow = now.add(const Duration(days: 1));
+                        nextScheduled = DateTime(tomorrow.year, tomorrow.month, tomorrow.day, schedule.first.hour, schedule.first.minute);
+                      }
+
+                      final newMed = Medication(
+                        medName: name,
+                        medType: selectedType,
+                        regimenType: selectedRegimen,
+                        dosage: dose,
+                        isCurrent: true,
+                        userId: user.uid,
+                        doseSchedule: schedule,
+                        nextScheduledUtc: nextScheduled,
+                      );
+
+                      await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(user.uid)
+                          .collection('medications')
+                          .add(newMed.toFirestore());
                     } else {
                       final int? gap = int.tryParse(gapController.text);
                       final newMed = Medication(

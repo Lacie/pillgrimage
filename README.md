@@ -47,7 +47,7 @@
 ## About
 
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
-<p align="center">
+<p>
   Pillgrimage is a medication check-in app that helps people take their meds on time—and be accountable when it matters.  
   It sends persistent reminders and notifies a trusted caretaker if doses are missed.  
   Designed for daily prescriptions, PRNs, and supplements, Pillgrimage turns medication adherence into a simple, trackable journey toward better health.
@@ -62,7 +62,7 @@
 - **Flutter** — Cross-platform mobile development (Android)
 - **Firebase Authentication** — Secure user sign-in and account management
 - **Cloud Firestore** — Real-time database for users, medications, and history
-- **SendGrid (Twilio)** — Sends automated email alerts to caretakers when medications are missed from provided MLH .tech domain, calls with custom html email template created by our team.
+- **SendGrid (Twilio)** — Sends automated email alerts to caretakers when medications are missed from provided MLH .tech domain, calls with custom html email template created by our team
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -127,9 +127,10 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 <!-- CONTACT -->
 
-## Contact
+## Links
 
 Project Link: [https://github.com/Lacie/pillgrimage](https://github.com/Lacie/pillgrimage)
+Devpost Link: [https://devpost.com/software/pillgrimage](https://devpost.com/software/pillgrimage)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

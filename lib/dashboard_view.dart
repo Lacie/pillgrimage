@@ -92,7 +92,7 @@ class _DashboardViewState extends State<DashboardView> {
           ],
         ),
         actions: [
-          if (_selectedIndex == 2) // Only show on Medications page
+          if (_selectedIndex == 2) // Only show on My Meds page
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: FilledButton.icon(
@@ -125,7 +125,7 @@ class _DashboardViewState extends State<DashboardView> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.medication_liquid_sharp),
-            label: 'Medications',
+            label: 'My Meds',
           ),
         ],
       ),
@@ -139,7 +139,7 @@ class _DashboardViewState extends State<DashboardView> {
       case 1:
         return "Dashboard";
       case 2:
-        return "Medications";
+        return "My Meds";
       default:
         return "pillgrimage";
     }
@@ -198,7 +198,7 @@ class _DashboardViewState extends State<DashboardView> {
       children: [
         Text("Hello, $name!",
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        const Text("Let's keep your health on track today!",
+        const Text("Let's keep your health on track today 😊",
             style: TextStyle(color: Colors.grey)),
       ],
     );
@@ -310,10 +310,9 @@ class _DashboardViewState extends State<DashboardView> {
                     med.caretakerEmail != null &&
                     !med.overdueNotificationSent) {
                   NotificationService().sendCaretakerNotification(
-                    medicationName: med.medName,
-                    patientName: userName,
-                    caretakerEmail: med.caretakerEmail!,
-                    medication: med,
+                    med.medName,
+                    userName,
+                    med.caretakerEmail!,
                   );
                   // Update the medication to prevent duplicate notifications
                   FirebaseFirestore.instance
@@ -338,14 +337,14 @@ class _DashboardViewState extends State<DashboardView> {
             ],
             _buildTimelineSection("Today", todayMeds),
             const SizedBox(height: 24),
-            _buildTimelineSection("Tomorrow", tomorrowMeds),
+            _buildTimelineSection("Tomorrow", tomorrowMeds, showDebugButton: false),
           ],
         );
       },
     );
   }
 
-  Widget _buildTimelineSection(String title, List<Medication> meds, {bool isOverdue = false}) {
+  Widget _buildTimelineSection(String title, List<Medication> meds, {bool isOverdue = false, bool showDebugButton = true}) {
     final Color sectionColor = isOverdue ? Colors.red : Colors.blue;
 
     return Column(
@@ -365,7 +364,11 @@ class _DashboardViewState extends State<DashboardView> {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: meds.length,
             separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) => MedicationCard(med: meds[index], isOverdue: isOverdue),
+            itemBuilder: (context, index) => MedicationCard(
+              med: meds[index], 
+              isOverdue: isOverdue,
+              showDebugButton: showDebugButton,
+            ),
           ),
       ],
     );

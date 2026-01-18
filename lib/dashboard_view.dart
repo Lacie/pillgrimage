@@ -181,10 +181,6 @@ class _DashboardViewState extends State<DashboardView> {
 
                       if (scheduledHours.isEmpty) return;
 
-                      // Create multiple entries or one entry with logic. 
-                      // For now, let's create a medication entry for EACH scheduled time
-                      // so they show up individually in the dashboard.
-                      
                       for (int hour in scheduledHours) {
                         DateTime nextTime = DateTime(
                           DateTime.now().year,
@@ -193,7 +189,6 @@ class _DashboardViewState extends State<DashboardView> {
                           hour,
                         );
                         
-                        // If the time has already passed today, schedule for tomorrow
                         if (nextTime.isBefore(DateTime.now())) {
                           nextTime = nextTime.add(const Duration(days: 1));
                         }
@@ -205,7 +200,7 @@ class _DashboardViewState extends State<DashboardView> {
                           dosage: dose,
                           isCurrent: true,
                           userId: user.uid,
-                          frequencyHours: 24, // Once a day per specific time slot
+                          frequencyHours: 24,
                           nextScheduledUtc: nextTime,
                         );
 
@@ -251,7 +246,7 @@ class _DashboardViewState extends State<DashboardView> {
       appBar: AppBar(
         title: Text(_getAppBarTitle(), style: const TextStyle(fontWeight: FontWeight.bold)),
         actions: [
-          if (_selectedIndex != 0)
+          if (_selectedIndex == 2) // Only show on Medications page
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: FilledButton.icon(
@@ -342,7 +337,7 @@ class _DashboardViewState extends State<DashboardView> {
             children: [
               _buildWelcomeHeader(userName),
               const SizedBox(height: 25),
-              _buildUpcomingMedicationsSection(user?.uid),
+              _buildDailyTimeline(user?.uid),
               const SizedBox(height: 25),
             ],
           ),
@@ -379,13 +374,13 @@ class _DashboardViewState extends State<DashboardView> {
       children: [
         Text("Hello, $name!",
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        const Text("Upcoming Medication:",
+        const Text("Ready for your next step?",
             style: TextStyle(color: Colors.grey)),
       ],
     );
   }
 
-  Widget _buildUpcomingMedicationsSection(String? userId) {
+  Widget _buildDailyTimeline(String? userId) {
     if (userId == null) return const SizedBox.shrink();
 
     return StreamBuilder<QuerySnapshot>(
@@ -405,47 +400,60 @@ class _DashboardViewState extends State<DashboardView> {
           return Text("Error: ${snapshot.error}");
         }
 
-        final now = DateTime.now();
-        final tomorrow = now.add(const Duration(hours: 24));
-
-        // Filter and sort in memory to avoid complex composite index requirements
-        final List<Medication> upcomingMeds = snapshot.data!.docs
+        final List<Medication> allRegMeds = snapshot.data!.docs
             .map((doc) => Medication.fromFirestore(doc))
-            .where((med) =>
-                med.nextScheduledUtc != null &&
-                med.nextScheduledUtc!.isAfter(now) &&
-                med.nextScheduledUtc!.isBefore(tomorrow))
+            .where((med) => med.nextScheduledUtc != null)
             .toList();
 
-        upcomingMeds.sort((a, b) => a.nextScheduledUtc!.compareTo(b.nextScheduledUtc!));
+        final now = DateTime.now();
+        final startOfToday = DateTime(now.year, now.month, now.day);
+        final endOfToday = startOfToday.add(const Duration(days: 1));
+        final endOfTomorrow = endOfToday.add(const Duration(days: 1));
 
-        if (upcomingMeds.isEmpty) {
-          return Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Center(
-              child: Text(
-                "No medications due in the next 24 hours.",
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey, fontSize: 16),
-              ),
-            ),
-          );
-        }
+        final List<Medication> todayMeds = allRegMeds
+            .where((med) => med.nextScheduledUtc!.isAfter(startOfToday) && med.nextScheduledUtc!.isBefore(endOfToday))
+            .toList();
+        
+        final List<Medication> tomorrowMeds = allRegMeds
+            .where((med) => med.nextScheduledUtc!.isAfter(endOfToday) && med.nextScheduledUtc!.isBefore(endOfTomorrow))
+            .toList();
 
-        return ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: upcomingMeds.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            return _buildMedicationCard(upcomingMeds[index]);
-          },
+        todayMeds.sort((a, b) => a.nextScheduledUtc!.compareTo(b.nextScheduledUtc!));
+        tomorrowMeds.sort((a, b) => a.nextScheduledUtc!.compareTo(b.nextScheduledUtc!));
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTimelineSection("Today", todayMeds),
+            const SizedBox(height: 24),
+            _buildTimelineSection("Tomorrow", tomorrowMeds),
+          ],
         );
       },
+    );
+  }
+
+  Widget _buildTimelineSection(String title, List<Medication> meds) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blue)),
+        const Divider(color: Colors.blue, thickness: 1),
+        const SizedBox(height: 12),
+        if (meds.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
+            child: Text("Nothing scheduled", style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: meds.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) => _buildMedicationCard(meds[index]),
+          ),
+      ],
     );
   }
 
@@ -482,7 +490,7 @@ class _DashboardViewState extends State<DashboardView> {
             ),
             child: const Center(
               child: Text(
-                "No medications found. Add a medication to get started.",
+                "No medications found.",
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey, fontSize: 16),
               ),
@@ -506,43 +514,51 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildMedicationCard(Medication med) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blueAccent.shade100,
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+        border: Border.all(color: Colors.blue.withOpacity(0.2)),
       ),
       child: Row(
         children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              med.medType == 'SUPP' ? Icons.spa : Icons.medication,
+              color: Colors.blue,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(med.medName,
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 Text(med.dosage,
-                    style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14)),
-                const SizedBox(height: 8),
-                if (med.regimenType == 'REG' && med.nextScheduledUtc != null)
-                  Text("Next: ${_formatDateTime(med.nextScheduledUtc!)}",
-                      style: const TextStyle(color: Colors.white, fontSize: 14))
-                else if (med.regimenType == 'PRN')
-                  const Text("Take as needed",
-                      style: TextStyle(color: Colors.white, fontSize: 14)),
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              shape: BoxShape.circle,
+          if (med.regimenType == 'REG' && med.nextScheduledUtc != null)
+            Text(
+              _formatDateTime(med.nextScheduledUtc!),
+              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
             ),
-            child: Icon(
-              med.medType == 'SUPP' ? Icons.spa : Icons.medication,
-              color: Colors.white,
-              size: 30,
-            ),
-          ),
         ],
       ),
     );

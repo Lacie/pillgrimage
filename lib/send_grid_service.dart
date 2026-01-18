@@ -9,7 +9,8 @@ class SendGridService {
   Future<void> sendEmail({
     required String toEmail,
     required String subject,
-    required String textContent,
+    String? textContent,
+    String? htmlContent,
   }) async {
     final response = await http.post(
       Uri.parse(_url),
@@ -25,13 +26,13 @@ class SendGridService {
           }
         ],
         "from": {
-          "email": "noreply@pillgrimage.tech", // TODO: Replace with your verified sender email in SendGrid
+          "email": "noreply@pillgrimage.tech",
           "name": "Pillgrimage"
         },
         "content": [
           {
-            "type": "text/plain",
-            "value": textContent
+            "type": htmlContent != null ? "text/html" : "text/plain",
+            "value": htmlContent ?? textContent ?? ''
           }
         ]
       }),

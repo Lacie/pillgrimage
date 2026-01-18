@@ -31,6 +31,8 @@ flutter:
     - assets/pillgrimage_logo.png
     - assets/pillgrimage_name.png
     - assets/pillgrimage_name_and_logo.png
+    - assets/email_notif.html
+
 
 flutter_launcher_icons:
   android: "launcher_icon"

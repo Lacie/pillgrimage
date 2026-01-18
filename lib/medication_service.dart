@@ -95,9 +95,10 @@ class MedicationService {
       final medication = Medication.fromFirestore(doc);
       if (medication.caretakerEmail != null) {
         await _notificationService.sendCaretakerNotification(
-          medication.medName,
-          user.displayName ?? 'the patient',
-          medication.caretakerEmail!,
+          medicationName: medication.medName,
+          patientName: user.displayName ?? 'the patient',
+          caretakerEmail: medication.caretakerEmail!,
+          medication: medication,
         );
         await doc.reference.update({'overdue_notification_sent': true});
       }

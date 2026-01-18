@@ -71,7 +71,24 @@ class _DashboardViewState extends State<DashboardView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_getAppBarTitle(), style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/launcher_icon.png',
+              height: 32,
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.medication, size: 32, color: Colors.blue),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                _getAppBarTitle(),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
         actions: [
           if (_selectedIndex == 2) // Only show on Medications page
             Padding(
@@ -116,13 +133,13 @@ class _DashboardViewState extends State<DashboardView> {
   String _getAppBarTitle() {
     switch (_selectedIndex) {
       case 0:
-        return "Medication History";
+        return "History";
       case 1:
         return "Dashboard";
       case 2:
-        return "Medication List";
+        return "Medications";
       default:
-        return "Pillgrimage";
+        return "pillgrimage";
     }
   }
 
@@ -179,10 +196,30 @@ class _DashboardViewState extends State<DashboardView> {
       children: [
         Text("Hello, $name!",
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        const Text("Ready for your next step?",
+        const Text("Let's keep your health on track today!",
             style: TextStyle(color: Colors.grey)),
       ],
     );
+  }
+
+  DateTime _getNextDoseTime(Medication med, DateTime baseTime) {
+    if (med.doseSchedule == null || med.doseSchedule!.isEmpty) {
+      return baseTime.add(const Duration(days: 1));
+    }
+    
+    List<DateTime> sortedSchedule = List.from(med.doseSchedule!);
+    sortedSchedule.sort((a, b) => a.hour.compareTo(b.hour));
+
+    for (var scheduledTime in sortedSchedule) {
+      DateTime candidate = DateTime(baseTime.year, baseTime.month, baseTime.day, scheduledTime.hour, scheduledTime.minute);
+      if (candidate.isAfter(baseTime)) {
+        return candidate;
+      }
+    }
+
+    DateTime firstScheduled = sortedSchedule.first;
+    DateTime tomorrow = baseTime.add(const Duration(days: 1));
+    return DateTime(tomorrow.year, tomorrow.month, tomorrow.day, firstScheduled.hour, firstScheduled.minute);
   }
 
   Widget _buildDailyTimeline(String? userId) {
@@ -215,17 +252,44 @@ class _DashboardViewState extends State<DashboardView> {
         final endOfToday = startOfToday.add(const Duration(days: 1));
         final endOfTomorrow = endOfToday.add(const Duration(days: 1));
 
-        final List<Medication> overdueMeds = allRegMeds
-            .where((med) => med.nextScheduledUtc!.isBefore(now))
-            .toList();
+        final List<Medication> overdueMeds = [];
+        final List<Medication> todayMeds = [];
+        final List<Medication> tomorrowMeds = [];
 
-        final List<Medication> todayMeds = allRegMeds
-            .where((med) => med.nextScheduledUtc!.isAfter(now) && med.nextScheduledUtc!.isBefore(endOfToday))
-            .toList();
-        
-        final List<Medication> tomorrowMeds = allRegMeds
-            .where((med) => med.nextScheduledUtc!.isAfter(endOfToday) && med.nextScheduledUtc!.isBefore(endOfTomorrow))
-            .toList();
+        for (var med in allRegMeds) {
+          DateTime? currentDose = med.nextScheduledUtc;
+          if (currentDose == null) continue;
+
+          int safety = 0;
+          // Project doses up to the end of tomorrow
+          while (currentDose != null && currentDose.isBefore(endOfTomorrow) && safety < 10) {
+            safety++;
+            // Create a virtual medication object for this specific dose
+            final doseView = Medication(
+              id: med.id,
+              medName: med.medName,
+              medType: med.medType,
+              regimenType: med.regimenType,
+              dosage: med.dosage,
+              isCurrent: med.isCurrent,
+              userId: med.userId,
+              nextScheduledUtc: currentDose,
+              doseSchedule: med.doseSchedule,
+              lastTakenUtc: med.lastTakenUtc,
+            );
+
+            if (currentDose.isBefore(now)) {
+              overdueMeds.add(doseView);
+            } else if (currentDose.isBefore(endOfToday)) {
+              todayMeds.add(doseView);
+            } else {
+              tomorrowMeds.add(doseView);
+            }
+
+            // Calculate the next one in the sequence
+            currentDose = _getNextDoseTime(med, currentDose);
+          }
+        }
 
         overdueMeds.sort((a, b) => a.nextScheduledUtc!.compareTo(b.nextScheduledUtc!));
         todayMeds.sort((a, b) => a.nextScheduledUtc!.compareTo(b.nextScheduledUtc!));

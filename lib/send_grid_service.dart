@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'api_keys.dart';
+import 'package:pillgrimage/api_keys.dart';
 
 class SendGridService {
   static const String _apiKey = sendGridApiKey;

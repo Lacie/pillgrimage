@@ -231,20 +231,20 @@ class MedicationCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: isClickable ? [
             BoxShadow(
-              color: (isOverdue ? Colors.red : Colors.grey).withOpacity(0.1),
+              color: (isOverdue ? Colors.red : Colors.grey).withValues(alpha: 0.1),
               spreadRadius: 2,
               blurRadius: 5,
               offset: const Offset(0, 3),
             ),
           ] : null,
-          border: Border.all(color: isClickable ? themeColor.withOpacity(0.2) : Colors.grey.shade200),
+          border: Border.all(color: isClickable ? themeColor.withValues(alpha: 0.2) : Colors.grey.shade200),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: isClickable ? themeColor.withOpacity(0.05) : Colors.grey.shade100,
+                color: isClickable ? themeColor.withValues(alpha: 0.05) : Colors.grey.shade100,
                 shape: BoxShape.circle,
               ),
               child: Icon(

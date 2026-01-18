@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -28,7 +29,9 @@ class NotificationService {
         },
       );
     } catch (e) {
-      print("Notification initialization failed: $e");
+      if (kDebugMode) {
+        print("Notification initialization failed: $e");
+      }
     }
   }
 
@@ -72,7 +75,9 @@ class NotificationService {
         payload: medicationId,
       );
     } catch (e) {
-      print("Error showing notification: $e");
+      if (kDebugMode) {
+        print("Error showing notification: $e");
+      }
     }
   }
 
@@ -99,9 +104,13 @@ class NotificationService {
         subject: subject,
         htmlContent: htmlContent,
       );
-      print('Caretaker notification sent for $medicationName.');
+      if (kDebugMode) {
+        print('Caretaker notification sent for $medicationName.');
+      }
     } catch (e) {
-      print('Error sending caretaker notification: $e');
+      if (kDebugMode) {
+        print('Error sending caretaker notification: $e');
+      }
     }
   }
 }

@@ -211,7 +211,7 @@ Future<void> _showMedicationDialog(BuildContext context, {Medication? med}) asyn
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: selectedRegimen,
+                    initialValue: selectedRegimen,
                     decoration: InputDecoration(
                       labelText: "Regimen",
                       prefixIcon: const Icon(Icons.calendar_today),
@@ -262,7 +262,7 @@ Future<void> _showMedicationDialog(BuildContext context, {Medication? med}) asyn
                     ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: selectedType,
+                    initialValue: selectedType,
                     decoration: InputDecoration(
                       labelText: "Type",
                       prefixIcon: const Icon(Icons.category),

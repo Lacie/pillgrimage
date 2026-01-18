@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pillgrimage/create_account_view.dart';
+import 'package:pillgrimage/splash.dart';
 
 
 void main() {
@@ -10,7 +10,7 @@ void main() {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
-      home: const CreateAccountView(), // i change here to register view
+      home: const SplashPage(),
     ),
   );
 }

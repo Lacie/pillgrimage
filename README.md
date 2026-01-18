@@ -37,8 +37,7 @@
     </li>
     <li><a href="#team">Team</a></li>
     <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <!-- <li><a href="#acknowledgments">Acknowledgments</a></li> -->
+    <li><a href="#links">Links</a></li>
   </ol>
 </details>
 

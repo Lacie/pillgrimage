@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-// SplashPage of pillgrimage
+import 'create_account_view.dart';
+import 'login_view.dart';
+
+
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
 
@@ -34,7 +37,13 @@ class SplashPage extends StatelessWidget {
           backgroundColor: Colors.blue,
           foregroundColor: Colors.white,
         ),
-        onPressed: () => print("Login Clicked"),
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const LoginView(),
+            ),
+          );
+        },
         child: const Text('LOG IN'),
       ),
     );
@@ -49,8 +58,13 @@ class SplashPage extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Colors.blue),
         ),
-        // TODo : fix these to lead to actual sign up pages
-        onPressed: () => print("Sign Up Clicked"),
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const CreateAccountView(),
+            ),
+          );
+        },
         child: const Text('SIGN UP'),
       ),
     );

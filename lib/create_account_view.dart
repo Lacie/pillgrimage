@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pillgrimage/dashboard_view.dart';
 
 class CreateAccountView extends StatefulWidget {
   const CreateAccountView({super.key});
@@ -70,7 +71,11 @@ class _CreateAccountState extends State<CreateAccountView> {
 
       if (mounted) {
         _showSnackBar("Account created successfully!", Colors.green);
-        Navigator.of(context).pop(); // Return to splash or go to home
+        // Navigate to dashboard and remove everything from stack
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const DashboardView()),
+          (route) => false,
+        );
       }
     } on FirebaseAuthException catch (e) {
       _showSnackBar(e.message ?? 'Auth Error', Colors.redAccent);

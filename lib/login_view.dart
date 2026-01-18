@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:pillgrimage/create_account_view.dart'; // Make sure this path is correct
+import 'package:pillgrimage/create_account_view.dart';
+import 'package:pillgrimage/dashboard_view.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -54,8 +55,11 @@ class _LoginViewState extends State<LoginView> {
 
       if (mounted) {
         _showSnackBar("Welcome back!", Colors.green);
-        // Navigate to home (replace current route so they can't go back to login)
-        // Navigator.of(context).pushReplacementNamed('/home');
+        // Navigate to dashboard and remove login from stack
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const DashboardView()),
+          (route) => false,
+        );
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage = 'An error occurred';

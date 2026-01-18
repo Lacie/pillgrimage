@@ -30,18 +30,16 @@
 <br />
 <div align="center">
   <a href="https://github.com/Lacie/pillgrimage">
-    <img src="assets/pillgrimage_logo.png" alt="Logo" width="200" height="200">
+    <img src="assets/pillgrimage_name_and_logo.png" alt="Logo" width="250" height="250">
   </a>
-
-<h3 align="center">pillgr<strong>image</strong></h3>
 
   <p align="center">
     #TODO project_description
     <br />
-    <a href="https://github.com/Lacie/pillgrimage"><strong>Explore the docs »</strong></a>
+    <!-- <a href="https://github.com/Lacie/pillgrimage"><strong>Explore the docs »</strong></a> -->
     <br />
     <br />
-    <a href="https://github.com/Lacie/pillgrimage">View Demo</a>
+    <!-- <a href="https://github.com/Lacie/pillgrimage">View Demo</a> -->
     <!-- &middot; -->
     <!-- <a href="https://github.com/Lacie/pillgrimage/issues/new?labels=bug&template=bug-report---.md">Report Bug</a> -->
     <!-- &middot; -->
@@ -68,10 +66,10 @@
     </li>
     <li><a href="#usage">Usage</a></li>
     <!-- <li><a href="#roadmap">Roadmap</a></li> -->
-    <li><a href="#contributors">Contributors</a></li>
+    <li><a href="#team">Team</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
+    <!-- <li><a href="#acknowledgments">Acknowledgments</a></li> -->
   </ol>
 </details>
 
@@ -134,11 +132,46 @@ See the [open issues](https://github.com/Lacie/pillgrimage/issues) for a full li
 
 <!-- CONTRIBUTORS -->
 
-## Contributors
+## Team
 
-<a href="https://github.com/Lacie/pillgrimage/graphs/contributors">
+<!-- <a href="https://github.com/Lacie/pillgrimage/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Lacie/pillgrimage" alt="contrib.rocks image" />
-</a>
+</a> -->
+
+
+<div align="center">
+  <h3>🩸 Code-Blooded Baddies 🩸</h3>
+  <p><i>Solving problems with style and precision.</i></p>
+  <table border="0">
+    <tr>
+      <td align="center">
+        <a href="https://github.com/Lacie">
+          <img src="https://github.com/Lacie.png" width="80px;" style="border-radius: 50%;"/>
+        </a><br />
+        <sub><a href="https://github.com/Lacie"><b>Lacie</b></a><br /><font color="gray">Lacie</font></sub>
+      </td>
+      <td align="center">
+        <a href="https://github.com/go-gitbread">
+          <img src="https://github.com/go-gitbread.png" width="80px;" style="border-radius: 50%;"/>
+        </a><br />
+        <sub><a href="https://github.com/go-gitbread"><b>go-gitbread</b></a><br /><font color="gray">Jia Yin Yan</font></sub>
+      </td>
+      <td align="center">
+        <a href="https://github.com/maevelehi">
+          <img src="https://github.com/maevelehi.png" width="80px;" style="border-radius: 50%;"/>
+        </a><br />
+        <sub><a href="https://github.com/maevelehi"><b>maevelehi</b></a><br /><font color="gray">Maeve Le</font></sub>
+      </td>
+      <td align="center">
+        <a href="https://github.com/nite-ninja">
+          <img src="https://github.com/nite-ninja.png" width="80px;" style="border-radius: 50%;"/>
+        </a><br />
+        <sub><a href="https://github.com/nite-ninja"><b>nite-ninja</b></a><br /><font color="gray">Neerja</font></sub>
+      </td>
+    </tr>
+  </table>
+</div>
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -160,13 +193,14 @@ Project Link: [https://github.com/Lacie/pillgrimage](https://github.com/Lacie/pi
 
 <!-- ACKNOWLEDGMENTS -->
 
-## Acknowledgments
+<!-- ## Acknowledgments
 
 - []()
 - []()
 - []()
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+-->
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->

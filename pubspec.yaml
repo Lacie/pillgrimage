@@ -26,7 +26,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/launcher_icon.png
+    - assets/title_bar_logo.png
     - assets/pillgrimage_logo.png
     - assets/pillgrimage_name.png
     - assets/pillgrimage_name_and_logo.png

@@ -2,11 +2,16 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId} {
-      // Allow users to read/write their own profile
+      // Allow users to read and write their own document and profile
       allow read, write: if request.auth != null && request.auth.uid == userId;
 
-      // Allow users to read/write their own medications subcollection
+      // Allow users to read and write their own medications subcollection
       match /medications/{medicationId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Allow users to read and write their own medication_logs subcollection
+      match /medication_logs/{logId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }

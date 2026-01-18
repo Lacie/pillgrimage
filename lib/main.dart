@@ -2,7 +2,7 @@ import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:pillgrimage/dashboard_view.dart';
+import 'package:pillgrimage/notification_service.dart';
 import 'package:pillgrimage/splash.dart';
 
 
@@ -16,6 +16,9 @@ void main() async {
   await FirebaseAuth.instance.setSettings(
     appVerificationDisabledForTesting: true,
   );
+
+  // Initialize notifications
+  await NotificationService().init();
 
   runApp(
     MaterialApp(

@@ -59,9 +59,10 @@ class _CreateAccountState extends State<CreateAccountView> {
       );
 
       final String uid = userCredential.user!.uid;
+      final String defaultName = email.split('@').first;
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'user_id': uid,
-        'name': '',
+        'name': defaultName,
         'email': email,
         '__created': FieldValue.serverTimestamp(),
         '__updated': FieldValue.serverTimestamp()

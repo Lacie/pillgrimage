@@ -33,9 +33,7 @@
     <img src="assets/pillgrimage_logo.png" alt="Logo" width="200" height="200">
   </a>
 
-<div align="center">
-  <h1>pillgr<b>image</b></h1>
-</div>
+<h3 align="center">pillgr<strong>image</strong></h3>
 
   <p align="center">
     #TODO project_description

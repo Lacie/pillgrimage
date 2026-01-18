@@ -36,10 +36,10 @@
   <p align="center">
     #TODO project_description
     <br />
-    <a href="https://github.com/Lacie/pillgrimage"><strong>Explore the docs »</strong></a>
+    <!-- <a href="https://github.com/Lacie/pillgrimage"><strong>Explore the docs »</strong></a> -->
     <br />
     <br />
-    <a href="https://github.com/Lacie/pillgrimage">View Demo</a>
+    <!-- <a href="https://github.com/Lacie/pillgrimage">View Demo</a> -->
     <!-- &middot; -->
     <!-- <a href="https://github.com/Lacie/pillgrimage/issues/new?labels=bug&template=bug-report---.md">Report Bug</a> -->
     <!-- &middot; -->
@@ -66,10 +66,10 @@
     </li>
     <li><a href="#usage">Usage</a></li>
     <!-- <li><a href="#roadmap">Roadmap</a></li> -->
-    <li><a href="#contributors">Contributors</a></li>
+    <li><a href="#team">Team</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
+    <!-- <li><a href="#acknowledgments">Acknowledgments</a></li> -->
   </ol>
 </details>
 
@@ -193,13 +193,14 @@ Project Link: [https://github.com/Lacie/pillgrimage](https://github.com/Lacie/pi
 
 <!-- ACKNOWLEDGMENTS -->
 
-## Acknowledgments
+<!-- ## Acknowledgments
 
 - []()
 - []()
 - []()
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+-->
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->

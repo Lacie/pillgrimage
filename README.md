@@ -33,15 +33,8 @@
     <a href="https://github.com/Lacie/pillgrimage/issues/new?labels=bug&template=bug-report---.md">Report Bug</a> 
      &middot;
      <a href="https://github.com/Lacie/pillgrimage/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>  -->
-    Pillgrimage is a medication check-in app that helps people take their meds on time—and be accountable when it matters.  
-    It sends persistent, snoozable reminders, verifies medication intake using OCR/computer vision, and notifies a trusted caretaker if doses are missed.  
-    Designed for daily prescriptions, PRNs, and supplements, Pillgrimage turns medication adherence into a simple, trackable journey toward better health.
-    <br />
+    
   </p>
-
-  <p align="center">
-  
-</p>
 </div>
 
 <!-- TABLE OF CONTENTS -->
@@ -74,16 +67,21 @@
 ## About
 
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
-
-`#TODO`
+<p align="center">
+  Pillgrimage is a medication check-in app that helps people take their meds on time—and be accountable when it matters.  
+  It sends persistent, snoozable reminders, verifies medication intake using OCR/computer vision, and notifies a trusted caretaker if doses are missed.  
+  Designed for daily prescriptions, PRNs, and supplements, Pillgrimage turns medication adherence into a simple, trackable journey toward better health.
+<br />
+</p>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Built With
 
-`#TODO`
-
-<!-- * [![Next][Next.js]][Next-url] -->
+<!-- * [![Flutter][Firebase Authentication]][Cloud Firestore] -->
+- **Flutter** — Cross-platform mobile development (Android)
+- **Firebase Authentication** — Secure user sign-in and account management
+- **Cloud Firestore** — Real-time database for users, medications, and history
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

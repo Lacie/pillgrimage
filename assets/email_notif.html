@@ -24,46 +24,41 @@
       color: #182e49;
       font-size: 22px;
       margin-top: 0;
+      text-align: left; /* keep heading left-aligned */
     }
     p {
       font-size: 16px;
       line-height: 1.5;
       margin-bottom: 15px;
+      text-align: left; /* keep paragraphs left-aligned */
     }
-    .footer {
+    .footer-text {
       font-size: 14px;
       color: #60935d;
       margin-top: 20px;
+      text-align: left;
+    }
+    .logo-section {
       text-align: center;
+      margin-top: 30px;
     }
     .logo {
+      width: 150px; /* bigger logo */
+      height: auto;
       display: block;
-      margin: 20px auto;
+      margin: 0 auto 10px auto;
     }
     .logo-text {
-      font-size: 24px;
-      color: #182e49;
-      text-align: center;
-      margin: 10px 0;
-    }
-    .logo-text strong {
-      font-weight: bold;
-      color: #66b9e8; /* highlight 'image' in blue */
-    }
-    .links {
-      text-align: center;
-      margin-top: 5px;
-      font-size: 14px;
-    }
-    .links a {
-      color: #66b9e8;
-      text-decoration: none;
-      margin: 0 5px;
+      font-size: 28px;
+      color: #000000; /* black text */
+      margin: 5px 0 20px 0;
     }
   </style>
 </head>
 <body>
   <div class="container">
+
+    <!-- Email Content -->
     <h2>Missed Medication Alert for [User]</h2>
 
     <p>Dear [Recipient],</p>
@@ -72,22 +67,16 @@
 
     <p>Please check in with <strong>[User]</strong> to ensure their medication is taken as prescribed. Maintaining consistent medication adherence is important for their health and wellbeing.</p>
 
-    <p class="footer">Thank you,<br>pillgrimage</p>
+    <p>Thank you,<br>pillgrimage</p>
 
-    <!-- Logo Section -->
-    <div class="footer">
+    <!-- Logo Section at Bottom -->
+    <div class="logo-section">
       <a href="https://github.com/Lacie/pillgrimage">
-        <img src="https://raw.githubusercontent.com/Lacie/pillgrimage/main/assets/pillgrimage_logo.png" alt="pillgrimage Logo" width="150" height="150" class="logo">
+        <img src="https://raw.githubusercontent.com/Lacie/pillgrimage/dev/assets/pillgrimage_name_and_logo.png" alt="pillgrimage Logo" class="logo">
       </a>
-      <div class="logo-text">pillgr<strong>image</strong></div>
-      <div class="links">
-        <a href="https://github.com/Lacie/pillgrimage"><strong>Explore the docs »</strong></a> |
-        <a href="https://github.com/Lacie/pillgrimage">View Demo</a>
-      </div>
+     
     </div>
 
   </div>
 </body>
 </html>
-
-

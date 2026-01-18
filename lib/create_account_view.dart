@@ -4,15 +4,15 @@ import "package:firebase_auth/firebase_auth.dart";
 import 'firebase_options.dart';
 
 // New User Registration Form
-class UserRegistrationView extends StatefulWidget {
-  const UserRegistrationView({super.key});
+class CreateAccountView extends StatefulWidget {
+  const CreateAccountView({super.key});
 
   @override
-  State<UserRegistrationView> createState() => _UserRegistrationState();
+  State<CreateAccountView> createState() => _UserRegistrationState();
 }
 
 // Review State
-class _UserRegistrationState extends State<UserRegistrationView> {
+class _UserRegistrationState extends State<CreateAccountView> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
 
@@ -42,7 +42,7 @@ class _UserRegistrationState extends State<UserRegistrationView> {
                       enableSuggestions: false,
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
-                        hintText: "Enter your email here",
+                        hintText: "Email",
                       ),
                     ),
                     TextField(
@@ -51,7 +51,7 @@ class _UserRegistrationState extends State<UserRegistrationView> {
                       autocorrect: false,
                       enableSuggestions: false,
                       decoration: const InputDecoration(
-                        hintText: "Enter your password here",
+                        hintText: "Password",
                       ),
                     ),
                     TextButton(
@@ -64,7 +64,7 @@ class _UserRegistrationState extends State<UserRegistrationView> {
                         );
                         // TODO Write to FireStore
                       },
-                      child: const Text("Registering"),
+                      child: const Text("Create Account"),
                     ),
                   ],
                 );

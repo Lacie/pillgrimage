@@ -215,20 +215,29 @@ class _DashboardViewState extends State<DashboardView> {
         final endOfToday = startOfToday.add(const Duration(days: 1));
         final endOfTomorrow = endOfToday.add(const Duration(days: 1));
 
+        final List<Medication> overdueMeds = allRegMeds
+            .where((med) => med.nextScheduledUtc!.isBefore(now))
+            .toList();
+
         final List<Medication> todayMeds = allRegMeds
-            .where((med) => med.nextScheduledUtc!.isAfter(startOfToday) && med.nextScheduledUtc!.isBefore(endOfToday))
+            .where((med) => med.nextScheduledUtc!.isAfter(now) && med.nextScheduledUtc!.isBefore(endOfToday))
             .toList();
         
         final List<Medication> tomorrowMeds = allRegMeds
             .where((med) => med.nextScheduledUtc!.isAfter(endOfToday) && med.nextScheduledUtc!.isBefore(endOfTomorrow))
             .toList();
 
+        overdueMeds.sort((a, b) => a.nextScheduledUtc!.compareTo(b.nextScheduledUtc!));
         todayMeds.sort((a, b) => a.nextScheduledUtc!.compareTo(b.nextScheduledUtc!));
         tomorrowMeds.sort((a, b) => a.nextScheduledUtc!.compareTo(b.nextScheduledUtc!));
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (overdueMeds.isNotEmpty) ...[
+              _buildTimelineSection("Overdue", overdueMeds, isOverdue: true),
+              const SizedBox(height: 24),
+            ],
             _buildTimelineSection("Today", todayMeds),
             const SizedBox(height: 24),
             _buildTimelineSection("Tomorrow", tomorrowMeds),
@@ -238,12 +247,14 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _buildTimelineSection(String title, List<Medication> meds) {
+  Widget _buildTimelineSection(String title, List<Medication> meds, {bool isOverdue = false}) {
+    final Color sectionColor = isOverdue ? Colors.red : Colors.blue;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blue)),
-        const Divider(color: Colors.blue, thickness: 1),
+        Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: sectionColor)),
+        Divider(color: sectionColor, thickness: 1),
         const SizedBox(height: 12),
         if (meds.isEmpty)
           const Padding(
@@ -256,7 +267,7 @@ class _DashboardViewState extends State<DashboardView> {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: meds.length,
             separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) => MedicationCard(med: meds[index]),
+            itemBuilder: (context, index) => MedicationCard(med: meds[index], isOverdue: isOverdue),
           ),
       ],
     );

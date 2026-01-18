@@ -80,7 +80,12 @@ class MedicationListView extends StatelessWidget {
           separatorBuilder: (context, index) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             final med = Medication.fromFirestore(snapshot.data!.docs[index]);
-            return MedicationCard(med: med, showLastTaken: true);
+            return MedicationCard(
+              med: med,
+              showLastTaken: true,
+              showFrequency: true,
+              showNextScheduled: false,
+            );
           },
         );
       },

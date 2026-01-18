@@ -28,6 +28,37 @@ String formatLastTaken(DateTime dt) {
   return "$datePart at ${formatDateTime(dt)}";
 }
 
+String formatOverdueDuration(DateTime scheduled) {
+  final diff = DateTime.now().difference(scheduled);
+  if (diff.inHours >= 1) {
+    final hours = diff.inHours;
+    final minutes = diff.inMinutes % 60;
+    if (hours >= 24) {
+      final days = diff.inDays;
+      return "$days day${days > 1 ? 's' : ''} overdue";
+    }
+    return "$hours hr ${minutes > 0 ? '$minutes min ' : ''}overdue";
+  } else {
+    final minutes = diff.inMinutes;
+    return "$minutes min overdue";
+  }
+}
+
+String formatFrequency(Medication med) {
+  if (med.regimenType == 'PRN') {
+    if (med.minGapHours != null) {
+      return "As needed (min ${med.minGapHours}h gap)";
+    }
+    return "As needed";
+  } else if (med.regimenType == 'REG' && med.doseSchedule != null && med.doseSchedule!.isNotEmpty) {
+    List<DateTime> sorted = List.from(med.doseSchedule!);
+    sorted.sort((a, b) => a.hour.compareTo(b.hour));
+    String times = sorted.map((d) => formatDateTime(d)).join(", ");
+    return "$times daily";
+  }
+  return "";
+}
+
 Future<void> takeMedication(BuildContext context, Medication med) async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return;
@@ -152,15 +183,23 @@ Future<void> takeMedication(BuildContext context, Medication med) async {
 class MedicationCard extends StatelessWidget {
   final Medication med;
   final bool showLastTaken;
+  final bool isOverdue;
+  final bool showFrequency;
+  final bool showNextScheduled;
 
   const MedicationCard({
     super.key,
     required this.med,
     this.showLastTaken = false,
+    this.isOverdue = false,
+    this.showFrequency = false,
+    this.showNextScheduled = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final themeColor = isOverdue ? Colors.red : Colors.blue;
+
     return GestureDetector(
       onTap: () => takeMedication(context, med),
       child: Container(
@@ -170,25 +209,25 @@ class MedicationCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: (isOverdue ? Colors.red : Colors.grey).withOpacity(0.1),
               spreadRadius: 2,
               blurRadius: 5,
               offset: const Offset(0, 3),
             ),
           ],
-          border: Border.all(color: Colors.blue.withOpacity(0.2)),
+          border: Border.all(color: themeColor.withOpacity(0.2)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
+                color: themeColor.withOpacity(0.05),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 med.medType == 'SUPP' ? Icons.spa : Icons.medication,
-                color: Colors.blue,
+                color: themeColor,
                 size: 24,
               ),
             ),
@@ -201,6 +240,14 @@ class MedicationCard extends StatelessWidget {
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   Text(med.dosage,
                       style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                  if (showFrequency)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2.0),
+                      child: Text(
+                        formatFrequency(med),
+                        style: const TextStyle(color: Colors.blue, fontSize: 12, fontWeight: FontWeight.w500),
+                      ),
+                    ),
                   if (showLastTaken && med.lastTakenUtc != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 4.0),
@@ -216,10 +263,16 @@ class MedicationCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    formatDateTime(med.nextScheduledUtc!),
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
-                  ),
+                  if (!isOverdue && showNextScheduled)
+                    Text(
+                      formatDateTime(med.nextScheduledUtc!),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: themeColor),
+                    ),
+                  if (isOverdue)
+                    Text(
+                      formatOverdueDuration(med.nextScheduledUtc!),
+                      style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
                   IconButton(
                     onPressed: () {
                       NotificationService().showTestNotification(

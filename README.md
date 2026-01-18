@@ -22,19 +22,6 @@
   <a href="https://github.com/Lacie/pillgrimage">
     <img src="assets/pillgrimage_name_and_logo.png" alt="Logo" width="250" height="250">
   </a>
-
-  <p align="center">
-    <!-- <br />
-    <a href="https://github.com/Lacie/pillgrimage"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/Lacie/pillgrimage">View Demo</a>
-     &middot;
-    <a href="https://github.com/Lacie/pillgrimage/issues/new?labels=bug&template=bug-report---.md">Report Bug</a> 
-     &middot;
-     <a href="https://github.com/Lacie/pillgrimage/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>  -->
-    
-  </p>
 </div>
 
 <!-- TABLE OF CONTENTS -->
@@ -45,6 +32,7 @@
       <a href="#about">About</a>
       <ul>
         <li><a href="#built-with">Built With</a></li>
+        <li><a href="#next-plan">Next Plan</a></li>
       </ul>
     </li>
     <li><a href="#team">Team</a></li>
@@ -59,7 +47,7 @@
 ## About
 
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
-<p align="center">
+<p>
   Pillgrimage is a medication check-in app that helps people take their meds on time—and be accountable when it matters.  
   It sends persistent reminders and notifies a trusted caretaker if doses are missed.  
   Designed for daily prescriptions, PRNs, and supplements, Pillgrimage turns medication adherence into a simple, trackable journey toward better health.
@@ -74,7 +62,14 @@
 - **Flutter** — Cross-platform mobile development (Android)
 - **Firebase Authentication** — Secure user sign-in and account management
 - **Cloud Firestore** — Real-time database for users, medications, and history
-- **SendGrid (Twilio)** — Sends automated email alerts to caretakers when medications are missed.
+- **SendGrid (Twilio)** — Sends automated email alerts to caretakers when medications are missed from provided MLH .tech domain, calls with custom html email template created by our team
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Next Plan
+
+Next, we want to add visual graphs so users can actually see how consistent they are with taking their meds. We’re also working on improving object recognition so the app can reliably identify medications from photos-including weekly pill organizers and birth control packs-so users don’t have to manually check everything. On top of that, we plan to make reminders, alarms, and notifications even smarter by adding a snooze option, giving users more flexibility while still keeping them on track. Finally, we aim to let the app automatically set reminders from medication labels, making managing meds as easy and stress-free as possible.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -137,20 +132,6 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 Project Link: [https://github.com/Lacie/pillgrimage](https://github.com/Lacie/pillgrimage)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- ACKNOWLEDGMENTS -->
-
-<!-- ## Acknowledgments
-
-- []()
-- []()
-- []()
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
--->
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
 [contributors-shield]: https://img.shields.io/github/contributors/Lacie/pillgrimage.svg?style=for-the-badge
 [contributors-url]: https://github.com/Lacie/pillgrimage/graphs/contributors

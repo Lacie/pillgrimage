@@ -13,15 +13,111 @@ class _DashboardViewState extends State<DashboardView> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    // Add logic for navigation or actions here
-    if (index == 0) {
-      // View History logic
-    } else if (index == 1) {
-      // Add Medication logic
+    if (index == 1) {
+      _showAddMedicationDialog();
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
     }
+  }
+
+  Future<void> _showAddMedicationDialog() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final nameController = TextEditingController();
+    final doseController = TextEditingController();
+    final frequencyController = TextEditingController();
+    final emailController = TextEditingController();
+    String selectedType = 'RX';
+
+    final Map<String, String> typeOptions = {
+      'RX': 'Prescription',
+      'OTC': 'Over the counter',
+    };
+
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text("Add Medication"),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(labelText: "Name"),
+                    ),
+                    TextField(
+                      controller: doseController,
+                      decoration: const InputDecoration(labelText: "Dose"),
+                    ),
+                    TextField(
+                      controller: frequencyController,
+                      decoration: const InputDecoration(labelText: "Frequency (seconds)"),
+                      keyboardType: TextInputType.number,
+                    ),
+                    TextField(
+                      controller: emailController,
+                      decoration: const InputDecoration(labelText: "Notification Email"),
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: selectedType,
+                      decoration: const InputDecoration(labelText: "Type"),
+                      items: typeOptions.entries.map((entry) {
+                        return DropdownMenuItem(
+                          value: entry.key,
+                          child: Text(entry.value),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setDialogState(() => selectedType = value);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (nameController.text.isEmpty) return;
+
+                    await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(user.uid)
+                        .collection('medications')
+                        .add({
+                      '__created': FieldValue.serverTimestamp(),
+                      '__updated': FieldValue.serverTimestamp(),
+                      'name': nameController.text.trim(),
+                      'dose': doseController.text.trim(),
+                      'frequency_seconds': int.tryParse(frequencyController.text) ?? 0,
+                      'notification_email': emailController.text.trim(),
+                      'type': selectedType,
+                    });
+
+                    if (context.mounted) Navigator.pop(context);
+                  },
+                  child: const Text("Save"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -55,7 +151,6 @@ class _DashboardViewState extends State<DashboardView> {
                 const SizedBox(height: 25),
                 _buildMedicationList(user?.uid),
                 const SizedBox(height: 25),
-                // Sign out button
                 Center(
                   child: TextButton(
                     onPressed: () async {
@@ -109,6 +204,7 @@ class _DashboardViewState extends State<DashboardView> {
           .collection('users')
           .doc(userId)
           .collection('medications')
+          .orderBy('__created', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -152,8 +248,8 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildMedicationCard(Map<String, dynamic> data) {
     final String name = data['name'] ?? 'Unknown Medication';
-    final String dosage = data['dosage'] ?? '';
-    final String time = data['time'] ?? 'No time set';
+    final String dose = data['dose'] ?? '';
+    final String type = data['type'] == 'RX' ? 'Prescription' : 'OTC';
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -168,16 +264,13 @@ class _DashboardViewState extends State<DashboardView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(name,
-                    style: const TextStyle(color: Colors.white, fontSize: 18)),
-                if (dosage.isNotEmpty)
-                  Text(dosage,
-                      style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14)),
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(type,
+                    style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14)),
                 const SizedBox(height: 5),
-                Text(time,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold)),
+                if (dose.isNotEmpty)
+                  Text("Dose: $dose",
+                      style: const TextStyle(color: Colors.white, fontSize: 16)),
               ],
             ),
           ),

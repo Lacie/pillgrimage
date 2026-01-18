@@ -64,13 +64,6 @@ Future<void> takeMedication(BuildContext context, Medication med) async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return;
 
-  final ImagePicker picker = ImagePicker();
-  final XFile? image = await picker.pickImage(source: ImageSource.camera);
-
-  if (image == null) {
-    return; // User canceled the camera
-  }
-
   // Check if the medication is scheduled early (more than 1 hour from now)
   bool isEarly = false;
   if (med.regimenType == 'REG' && med.nextScheduledUtc != null) {
@@ -89,6 +82,8 @@ Future<void> takeMedication(BuildContext context, Medication med) async {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text("Are you sure you want to take ${med.medName} (${med.dosage})?"),
+          const SizedBox(height: 12),
+          const Text("You will need to take a photo of your medication.", style: TextStyle(fontSize: 13, color: Colors.grey)),
           if (isEarly) ...[
             const SizedBox(height: 12),
             const Text(
@@ -103,16 +98,24 @@ Future<void> takeMedication(BuildContext context, Medication med) async {
           onPressed: () => Navigator.pop(context, false),
           child: const Text("Cancel"),
         ),
-        ElevatedButton(
+        ElevatedButton.icon(
           onPressed: () => Navigator.pop(context, true),
+          icon: const Icon(Icons.camera_alt, size: 18),
+          label: const Text("Take Med"),
           style: isEarly ? ElevatedButton.styleFrom(backgroundColor: Colors.orange) : null,
-          child: const Text("Take"),
         ),
       ],
     ),
   );
 
   if (confirmed == true) {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.camera);
+
+    if (image == null) {
+      return; // User canceled the camera after confirming
+    }
+
     // Clear the notification when medication is taken
     NotificationService().cancelNotification(1);
 
@@ -200,6 +203,7 @@ class MedicationCard extends StatelessWidget {
   final bool showFrequency;
   final bool showNextScheduled;
   final bool showDebugButton;
+  final bool isClickable;
   final VoidCallback? onEdit;
 
   const MedicationCard({
@@ -210,6 +214,7 @@ class MedicationCard extends StatelessWidget {
     this.showFrequency = false,
     this.showNextScheduled = true,
     this.showDebugButton = true,
+    this.isClickable = true,
     this.onEdit,
   });
 
@@ -218,33 +223,33 @@ class MedicationCard extends StatelessWidget {
     final themeColor = isOverdue ? Colors.red : Colors.blue;
 
     return GestureDetector(
-      onTap: () => takeMedication(context, med),
+      onTap: isClickable ? () => takeMedication(context, med) : null,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isClickable ? Colors.white : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
+          boxShadow: isClickable ? [
             BoxShadow(
               color: (isOverdue ? Colors.red : Colors.grey).withOpacity(0.1),
               spreadRadius: 2,
               blurRadius: 5,
               offset: const Offset(0, 3),
             ),
-          ],
-          border: Border.all(color: themeColor.withOpacity(0.2)),
+          ] : null,
+          border: Border.all(color: isClickable ? themeColor.withOpacity(0.2) : Colors.grey.shade200),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: themeColor.withOpacity(0.05),
+                color: isClickable ? themeColor.withOpacity(0.05) : Colors.grey.shade100,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 med.medType == 'SUPP' ? Icons.spa : Icons.medication,
-                color: themeColor,
+                color: isClickable ? themeColor : Colors.grey.shade400,
                 size: 24,
               ),
             ),
@@ -254,15 +259,23 @@ class MedicationCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(med.medName,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                        fontSize: 16, 
+                        fontWeight: FontWeight.bold,
+                        color: isClickable ? Colors.black : Colors.grey.shade600,
+                      )),
                   Text(med.dosage,
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 13)),
                   if (showFrequency)
                     Padding(
                       padding: const EdgeInsets.only(top: 2.0),
                       child: Text(
                         formatFrequency(med),
-                        style: const TextStyle(color: Colors.blue, fontSize: 12, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                          color: isClickable ? Colors.blue : Colors.grey.shade400, 
+                          fontSize: 12, 
+                          fontWeight: FontWeight.w500
+                        ),
                       ),
                     ),
                   if (showLastTaken && med.lastTakenUtc != null)
@@ -270,7 +283,7 @@ class MedicationCard extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 4.0),
                       child: Text(
                         "Last taken: ${formatLastTaken(med.lastTakenUtc!)}",
-                        style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                        style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
                       ),
                     ),
                 ],
@@ -283,7 +296,10 @@ class MedicationCard extends StatelessWidget {
                   if (!isOverdue && showNextScheduled)
                     Text(
                       formatDateTime(med.nextScheduledUtc!),
-                      style: TextStyle(fontWeight: FontWeight.bold, color: themeColor),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold, 
+                        color: isClickable ? themeColor : Colors.grey.shade400
+                      ),
                     ),
                   if (isOverdue)
                     Text(
@@ -311,7 +327,7 @@ class MedicationCard extends StatelessWidget {
                             medicationId: med.id!,
                           );
                         },
-                        icon: const Icon(Icons.bug_report, size: 18, color: Colors.orange),
+                        icon: Icon(Icons.bug_report, size: 18, color: isClickable ? Colors.orange : Colors.grey.shade300),
                         tooltip: "Test Notification",
                         constraints: const BoxConstraints(),
                         padding: EdgeInsets.zero,

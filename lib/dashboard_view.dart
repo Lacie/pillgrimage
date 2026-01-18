@@ -338,14 +338,14 @@ class _DashboardViewState extends State<DashboardView> {
             ],
             _buildTimelineSection("Today", todayMeds),
             const SizedBox(height: 24),
-            _buildTimelineSection("Tomorrow", tomorrowMeds, showDebugButton: false),
+            _buildTimelineSection("Tomorrow", tomorrowMeds, showDebugButton: false, isClickable: false),
           ],
         );
       },
     );
   }
 
-  Widget _buildTimelineSection(String title, List<Medication> meds, {bool isOverdue = false, bool showDebugButton = true}) {
+  Widget _buildTimelineSection(String title, List<Medication> meds, {bool isOverdue = false, bool showDebugButton = true, bool isClickable = true}) {
     final Color sectionColor = isOverdue ? Colors.red : Colors.blue;
 
     return Column(
@@ -369,6 +369,7 @@ class _DashboardViewState extends State<DashboardView> {
               med: meds[index],
               isOverdue: isOverdue,
               showDebugButton: showDebugButton,
+              isClickable: isClickable,
             ),
           ),
       ],

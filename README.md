@@ -127,9 +127,10 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 <!-- CONTACT -->
 
-## Contact
+## Links
 
 Project Link: [https://github.com/Lacie/pillgrimage](https://github.com/Lacie/pillgrimage)
+Devpost Link: [https://devpost.com/software/pillgrimage](https://devpost.com/software/pillgrimage)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

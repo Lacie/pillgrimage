@@ -90,7 +90,7 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text("Login"), centerTitle: true),
+      appBar: AppBar(title: const Text("Log In"), centerTitle: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(

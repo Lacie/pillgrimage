@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.pillgrimage"
-        minSdk = flutter.minSdkVersion // Updated to match flutter_local_notifications requirements if needed
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

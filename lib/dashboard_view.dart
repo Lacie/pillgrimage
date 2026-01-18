@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pillgrimage/medication_model.dart';
+
+import 'package:pillgrimage/notification_service.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -13,10 +17,46 @@ class DashboardView extends StatefulWidget {
 class _DashboardViewState extends State<DashboardView> {
   int _selectedIndex = 1; // Default to Dashboard
   final ScrollController _medListScrollController = ScrollController();
+  StreamSubscription? _notificationSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _listenToNotifications();
+  }
+
+  void _listenToNotifications() {
+    _notificationSubscription = NotificationService().onNotificationTap.listen((medicationId) {
+      if (medicationId != null) {
+        _handleNotificationAction(medicationId);
+      }
+    });
+  }
+
+  Future<void> _handleNotificationAction(String medicationId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    // Fetch the medication from Firestore
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('medications')
+        .doc(medicationId)
+        .get();
+
+    if (doc.exists) {
+      final med = Medication.fromFirestore(doc);
+      if (mounted) {
+        _takeMedication(med);
+      }
+    }
+  }
 
   @override
   void dispose() {
     _medListScrollController.dispose();
+    _notificationSubscription?.cancel();
     super.dispose();
   }
 
@@ -72,6 +112,9 @@ class _DashboardViewState extends State<DashboardView> {
     );
 
     if (confirmed == true) {
+      // Clear the notification when medication is taken
+      NotificationService().cancelNotification(1);
+
       final now = FieldValue.serverTimestamp();
       final logData = {
         'med_id': med.id,
@@ -210,7 +253,7 @@ class _DashboardViewState extends State<DashboardView> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      initialValue: selectedRegimen,
+                      value: selectedRegimen,
                       decoration: InputDecoration(
                         labelText: "Regimen",
                         prefixIcon: const Icon(Icons.calendar_today),
@@ -263,7 +306,7 @@ class _DashboardViewState extends State<DashboardView> {
                       
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      initialValue: selectedType,
+                      value: selectedType,
                       decoration: InputDecoration(
                         labelText: "Type",
                         prefixIcon: const Icon(Icons.category),
@@ -694,9 +737,27 @@ class _DashboardViewState extends State<DashboardView> {
               ),
             ),
             if (med.regimenType == 'REG' && med.nextScheduledUtc != null)
-              Text(
-                _formatDateTime(med.nextScheduledUtc!),
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    _formatDateTime(med.nextScheduledUtc!),
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      NotificationService().showTestNotification(
+                        title: "Time for ${med.medName}!",
+                        body: "Reminder: Take your ${med.dosage} dose of ${med.medName}.",
+                        medicationId: med.id!,
+                      );
+                    },
+                    icon: const Icon(Icons.bug_report, size: 18, color: Colors.orange),
+                    tooltip: "Test Notification",
+                    constraints: const BoxConstraints(),
+                    padding: EdgeInsets.zero,
+                  ),
+                ],
               ),
           ],
         ),

@@ -10,16 +10,19 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 1; // Default to Dashboard
+  final ScrollController _medListScrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _medListScrollController.dispose();
+    super.dispose();
+  }
 
   void _onItemTapped(int index) {
-    if (index == 1) {
-      _showAddMedicationDialog();
-    } else {
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   Future<void> _showAddMedicationDialog() async {
@@ -43,33 +46,57 @@ class _DashboardViewState extends State<DashboardView> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text("Add Medication"),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              title: const Text("Add New Medication", style: TextStyle(fontWeight: FontWeight.bold)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
                       controller: nameController,
-                      decoration: const InputDecoration(labelText: "Name"),
+                      decoration: InputDecoration(
+                        labelText: "Name",
+                        prefixIcon: const Icon(Icons.medication),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                     ),
+                    const SizedBox(height: 16),
                     TextField(
                       controller: doseController,
-                      decoration: const InputDecoration(labelText: "Dose"),
+                      decoration: InputDecoration(
+                        labelText: "Dose (e.g. 500mg)",
+                        prefixIcon: const Icon(Icons.scale),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                     ),
+                    const SizedBox(height: 16),
                     TextField(
                       controller: frequencyController,
-                      decoration: const InputDecoration(labelText: "Frequency (seconds)"),
+                      decoration: InputDecoration(
+                        labelText: "Frequency (seconds)",
+                        prefixIcon: const Icon(Icons.timer),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                       keyboardType: TextInputType.number,
                     ),
+                    const SizedBox(height: 16),
                     TextField(
                       controller: emailController,
-                      decoration: const InputDecoration(labelText: "Notification Email"),
+                      decoration: InputDecoration(
+                        labelText: "Notification Email",
+                        prefixIcon: const Icon(Icons.email),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       value: selectedType,
-                      decoration: const InputDecoration(labelText: "Type"),
+                      decoration: InputDecoration(
+                        labelText: "Type",
+                        prefixIcon: const Icon(Icons.category),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                       items: typeOptions.entries.map((entry) {
                         return DropdownMenuItem(
                           value: entry.key,
@@ -91,6 +118,11 @@ class _DashboardViewState extends State<DashboardView> {
                   child: const Text("Cancel"),
                 ),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
                   onPressed: () async {
                     if (nameController.text.isEmpty) return;
 
@@ -110,7 +142,7 @@ class _DashboardViewState extends State<DashboardView> {
 
                     if (context.mounted) Navigator.pop(context);
                   },
-                  child: const Text("Save"),
+                  child: const Text("Save Medication"),
                 ),
               ],
             );
@@ -122,64 +154,131 @@ class _DashboardViewState extends State<DashboardView> {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
     return Scaffold(
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('users')
-            .doc(user?.uid)
-            .snapshots(),
-        builder: (context, userSnapshot) {
-          if (userSnapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (userSnapshot.hasError) {
-            return const Center(child: Text("Something went wrong"));
-          }
-
-          final userData = userSnapshot.data?.data() as Map<String, dynamic>?;
-          final String userName = userData?['name'] ?? 'User';
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 100, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildWelcomeHeader(userName),
-                const SizedBox(height: 25),
-                _buildMedicationList(user?.uid),
-                const SizedBox(height: 25),
-                Center(
-                  child: TextButton(
-                    onPressed: () async {
-                      await FirebaseAuth.instance.signOut();
-                      if (context.mounted) {
-                        Navigator.of(context).pushReplacementNamed('/');
-                      }
-                    },
-                    child: const Text("Sign Out", style: TextStyle(color: Colors.red)),
-                  ),
+      appBar: AppBar(
+        title: Text(_getAppBarTitle(), style: const TextStyle(fontWeight: FontWeight.bold)),
+        actions: [
+          if (_selectedIndex != 0)
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: FilledButton.icon(
+                onPressed: _showAddMedicationDialog,
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text("Add"),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
-              ],
+              ),
             ),
-          );
-        },
+        ],
       ),
+      body: _buildSelectedPage(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
             label: 'History',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline),
-            label: 'Add Medication',
+            icon: Icon(Icons.dashboard_rounded),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.medication_liquid_sharp),
+            label: 'Medications',
           ),
         ],
+      ),
+    );
+  }
+
+  String _getAppBarTitle() {
+    switch (_selectedIndex) {
+      case 0:
+        return "History";
+      case 1:
+        return "Dashboard";
+      case 2:
+        return "Medication List";
+      default:
+        return "Pillgrimage";
+    }
+  }
+
+  Widget _buildSelectedPage() {
+    switch (_selectedIndex) {
+      case 0:
+        return const Center(child: Text("History Page Content"));
+      case 1:
+        return _buildDashboardContent();
+      case 2:
+        return _buildMedicationListPage();
+      default:
+        return const Center(child: Text("Page Not Found"));
+    }
+  }
+
+  Widget _buildDashboardContent() {
+    final user = FirebaseAuth.instance.currentUser;
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(user?.uid)
+          .snapshots(),
+      builder: (context, userSnapshot) {
+        if (userSnapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (userSnapshot.hasError) {
+          return const Center(child: Text("Something went wrong"));
+        }
+
+        final userData = userSnapshot.data?.data() as Map<String, dynamic>?;
+        final String userName = userData?['name'] ?? 'User';
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildWelcomeHeader(userName),
+              const SizedBox(height: 25),
+              _buildMedicationList(user?.uid, limit: 2),
+              const SizedBox(height: 25),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMedicationListPage() {
+    final user = FirebaseAuth.instance.currentUser;
+    return Scrollbar(
+      controller: _medListScrollController,
+      thumbVisibility: true,
+      thickness: 6,
+      radius: const Radius.circular(10),
+      child: SingleChildScrollView(
+        controller: _medListScrollController,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            //const Text("All Medications",
+              //  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            _buildMedicationList(user?.uid),
+            // Extra spacing at bottom to ensure scrollbar is useful
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }
@@ -196,16 +295,21 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _buildMedicationList(String? userId) {
+  Widget _buildMedicationList(String? userId, {int? limit}) {
     if (userId == null) return const SizedBox.shrink();
 
+    Query query = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('medications')
+        .orderBy('__created', descending: true);
+
+    if (limit != null) {
+      query = query.limit(limit);
+    }
+
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('medications')
-          .orderBy('__created', descending: true)
-          .snapshots(),
+      stream: query.snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());

@@ -134,6 +134,10 @@ Future<void> takeMedication(BuildContext context, Medication med) async {
         '__updated': now,
       };
 
+      if (med.overdueNotificationSent) {
+        updates['overdue_notification_sent'] = false;
+      }
+
       if (med.regimenType == 'REG' && med.doseSchedule != null && med.doseSchedule!.isNotEmpty) {
         final baseTime = med.nextScheduledUtc ?? DateTime.now();
         
@@ -199,6 +203,7 @@ class MedicationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeColor = isOverdue ? Colors.red : Colors.blue;
+    final user = FirebaseAuth.instance.currentUser;
 
     return GestureDetector(
       onTap: () => takeMedication(context, med),
@@ -273,6 +278,7 @@ class MedicationCard extends StatelessWidget {
                       formatOverdueDuration(med.nextScheduledUtc!),
                       style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.bold),
                     ),
+                  if (med.notifyCaretaker && med.caretakerEmail != null)
                   IconButton(
                     onPressed: () {
                       NotificationService().showTestNotification(

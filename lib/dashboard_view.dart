@@ -15,21 +15,17 @@ class DashboardView extends StatelessWidget {
             .collection('users')
             .doc(user?.uid)
             .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+        builder: (context, userSnapshot) {
+          if (userSnapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (snapshot.hasError) {
+          if (userSnapshot.hasError) {
             return const Center(child: Text("Something went wrong"));
           }
 
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(child: Text("User data not found"));
-          }
-
-          final userData = snapshot.data!.data() as Map<String, dynamic>;
-          final String userName = userData['name'] ?? 'User';
+          final userData = userSnapshot.data?.data() as Map<String, dynamic>?;
+          final String userName = userData?['name'] ?? 'User';
 
           return SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16, 100, 16, 16),
@@ -38,9 +34,9 @@ class DashboardView extends StatelessWidget {
               children: [
                 _buildWelcomeHeader(userName),
                 const SizedBox(height: 25),
-                _buildUpcomingSchedule(),
+                _buildMedicationList(user?.uid),
                 const SizedBox(height: 25),
-                // Sign out button for testing
+                // Sign out button
                 Center(
                   child: TextButton(
                     onPressed: () async {
@@ -72,30 +68,87 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  Widget _buildUpcomingSchedule() {
+  Widget _buildMedicationList(String? userId) {
+    if (userId == null) return const SizedBox.shrink();
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('medications')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return const Text("Error loading medications");
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Center(
+              child: Text(
+                "No medications found. Add a medication to get started.",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
+            ),
+          );
+        }
+
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: snapshot.data!.docs.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final medData = snapshot.data!.docs[index].data() as Map<String, dynamic>;
+            return _buildMedicationCard(medData);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMedicationCard(Map<String, dynamic> data) {
+    final String name = data['name'] ?? 'Unknown Medication';
+    final String dosage = data['dosage'] ?? '';
+    final String time = data['time'] ?? 'No time set';
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.blueAccent.shade100,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: const Row(
+      child: Row(
         children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Tylenol",
-                    style: TextStyle(color: Colors.white, fontSize: 18)),
-                SizedBox(height: 5),
-                Text("Jan 18, 2026 @ 5:00PM",
-                    style: TextStyle(
+                Text(name,
+                    style: const TextStyle(color: Colors.white, fontSize: 18)),
+                if (dosage.isNotEmpty)
+                  Text(dosage,
+                      style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14)),
+                const SizedBox(height: 5),
+                Text(time,
+                    style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 26,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold)),
               ],
             ),
           ),
+          const Icon(Icons.medication, color: Colors.white, size: 40),
         ],
       ),
     );

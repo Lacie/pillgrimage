@@ -61,7 +61,7 @@
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
 <p align="center">
   Pillgrimage is a medication check-in app that helps people take their meds on time—and be accountable when it matters.  
-  It sends persistent, snoozable reminders, verifies medication intake using OCR/computer vision, and notifies a trusted caretaker if doses are missed.  
+  It sends persistent reminders and notifies a trusted caretaker if doses are missed.  
   Designed for daily prescriptions, PRNs, and supplements, Pillgrimage turns medication adherence into a simple, trackable journey toward better health.
 <br />
 </p>

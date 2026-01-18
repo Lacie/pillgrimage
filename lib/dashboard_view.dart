@@ -26,6 +26,82 @@ class _DashboardViewState extends State<DashboardView> {
     });
   }
 
+  Future<void> _takeMedication(Medication med) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Take Medication"),
+        content: Text("Are you sure you want to take ${med.medName} (${med.dosage})?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Take"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final now = FieldValue.serverTimestamp();
+      final logData = {
+        'med_id': med.id,
+        'user_id': user.uid,
+        'med_name': med.medName,
+        'med_type': med.medType,
+        'regimen_type': med.regimenType,
+        'taken_at_utc': now,
+        '__created': now,
+        '__updated': now,
+      };
+
+      try {
+        // 1. Log the dose
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('medication_logs')
+            .add(logData);
+
+        // 2. Update the medication record with last_taken and next_scheduled if REG
+        final Map<String, dynamic> updates = {
+          'last_taken_utc': now,
+          '__updated': now,
+        };
+
+        if (med.regimenType == 'REG' && med.frequencyHours != null) {
+          final nextTime = DateTime.now().add(Duration(hours: med.frequencyHours!));
+          updates['next_scheduled_utc'] = Timestamp.fromDate(nextTime);
+        }
+
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('medications')
+            .doc(med.id)
+            .update(updates);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Logged ${med.medName}")),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error: $e"), backgroundColor: Colors.redAccent),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _showAddMedicationDialog() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -505,61 +581,72 @@ class _DashboardViewState extends State<DashboardView> {
           separatorBuilder: (context, index) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             final med = Medication.fromFirestore(snapshot.data!.docs[index]);
-            return _buildMedicationCard(med);
+            return _buildMedicationCard(med, showLastTaken: true);
           },
         );
       },
     );
   }
 
-  Widget _buildMedicationCard(Medication med) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-        border: Border.all(color: Colors.blue.withOpacity(0.2)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              shape: BoxShape.circle,
+  Widget _buildMedicationCard(Medication med, {bool showLastTaken = false}) {
+    return GestureDetector(
+      onTap: () => _takeMedication(med),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
             ),
-            child: Icon(
-              med.medType == 'SUPP' ? Icons.spa : Icons.medication,
-              color: Colors.blue,
-              size: 24,
+          ],
+          border: Border.all(color: Colors.blue.withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                med.medType == 'SUPP' ? Icons.spa : Icons.medication,
+                color: Colors.blue,
+                size: 24,
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(med.medName,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Text(med.dosage,
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-              ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(med.medName,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(med.dosage,
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                  if (showLastTaken && med.lastTakenUtc != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        "Last taken: ${_formatLastTaken(med.lastTakenUtc!)}",
+                        style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-          if (med.regimenType == 'REG' && med.nextScheduledUtc != null)
-            Text(
-              _formatDateTime(med.nextScheduledUtc!),
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
-            ),
-        ],
+            if (med.regimenType == 'REG' && med.nextScheduledUtc != null)
+              Text(
+                _formatDateTime(med.nextScheduledUtc!),
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -568,5 +655,23 @@ class _DashboardViewState extends State<DashboardView> {
     final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
     final amPm = dt.hour >= 12 ? 'PM' : 'AM';
     return "$hour:${dt.minute.toString().padLeft(2, '0')} $amPm";
+  }
+
+  String _formatLastTaken(DateTime dt) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final takenDate = DateTime(dt.year, dt.month, dt.day);
+
+    String datePart = "";
+    if (takenDate == today) {
+      datePart = "Today";
+    } else if (takenDate == yesterday) {
+      datePart = "Yesterday";
+    } else {
+      datePart = "${dt.month}/${dt.day}";
+    }
+    
+    return "$datePart at ${_formatDateTime(dt)}";
   }
 }

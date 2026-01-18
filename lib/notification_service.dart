@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pillgrimage/send_grid_service.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._();
@@ -8,16 +9,15 @@ class NotificationService {
   NotificationService._();
 
   final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
-  
-  // Stream to broadcast notification taps with their payload (medication ID)
+  final SendGridService _sendGridService = SendGridService();
+
   final StreamController<String?> _onNotificationTap = StreamController<String?>.broadcast();
   Stream<String?> get onNotificationTap => _onNotificationTap.stream;
 
   Future<void> init() async {
-    // Using 'launcher_icon' which we've confirmed is in the drawable folder
     const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('launcher_icon');
     const InitializationSettings settings = InitializationSettings(android: androidSettings);
-    
+
     try {
       await _notificationsPlugin.initialize(
         settings,
@@ -35,7 +35,7 @@ class NotificationService {
   }
 
   Future<void> showTestNotification({
-    required String title, 
+    required String title,
     required String body,
     required String medicationId,
   }) async {
@@ -45,7 +45,7 @@ class NotificationService {
     }
 
     const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'medication_alerts_persistent_v7', 
+      'medication_alerts_persistent_v7',
       'Persistent Medication Alerts',
       channelDescription: 'Alarms that stay until interacted with',
       importance: Importance.max,
@@ -56,7 +56,6 @@ class NotificationService {
       fullScreenIntent: true,
       audioAttributesUsage: AudioAttributesUsage.alarm,
       visibility: NotificationVisibility.public,
-      // Explicitly set the small icon to the app logo in the drawable folder
       icon: 'launcher_icon',
     );
 
@@ -64,7 +63,7 @@ class NotificationService {
 
     try {
       await _notificationsPlugin.show(
-        1, 
+        1,
         title,
         body,
         details,
@@ -77,5 +76,22 @@ class NotificationService {
 
   Future<void> cancelNotification(int id) async {
     await _notificationsPlugin.cancel(id);
+  }
+
+  Future<void> sendCaretakerNotification(String medicationName, String patientName, String caretakerEmail) async {
+    final String subject = 'Overdue Medication Alert for $patientName';
+    final String textContent =
+        'This is an automated message to inform you that $patientName has missed a scheduled dose of $medicationName and is now 2 hours overdue.';
+
+    try {
+      await _sendGridService.sendEmail(
+        toEmail: caretakerEmail,
+        subject: subject,
+        textContent: textContent,
+      );
+      print('Caretaker notification sent for $medicationName.');
+    } catch (e) {
+      print('Error sending caretaker notification: $e');
+    }
   }
 }

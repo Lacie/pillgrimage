@@ -100,13 +100,15 @@ Future<void> showAddMedicationDialog(BuildContext context) async {
   final nameController = TextEditingController();
   final doseController = TextEditingController();
   final gapController = TextEditingController();
-  
+  final caretakerEmailController = TextEditingController();
+
   String selectedType = 'RX';
   String selectedRegimen = 'REG';
-  
+
   bool takeMorning = false;
   bool takeAfternoon = false;
   bool takeNight = false;
+  bool notifyCaretaker = false;
 
   final Map<String, String> typeOptions = {
     'RX': 'Prescription',
@@ -167,7 +169,6 @@ Future<void> showAddMedicationDialog(BuildContext context) async {
                     },
                   ),
                   const SizedBox(height: 16),
-                  
                   if (selectedRegimen == 'REG') ...[
                     const Text("When do you take this?", style: TextStyle(fontWeight: FontWeight.bold)),
                     CheckboxListTile(
@@ -201,7 +202,6 @@ Future<void> showAddMedicationDialog(BuildContext context) async {
                       ),
                       keyboardType: TextInputType.number,
                     ),
-                    
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: selectedType,
@@ -219,6 +219,27 @@ Future<void> showAddMedicationDialog(BuildContext context) async {
                       }
                     },
                   ),
+                  const SizedBox(height: 16),
+                  CheckboxListTile(
+                    title: const Text("Notify Caretaker"),
+                    value: notifyCaretaker,
+                    onChanged: (val) => setDialogState(() => notifyCaretaker = val!),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    dense: true,
+                  ),
+                  if (notifyCaretaker)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: TextField(
+                        controller: caretakerEmailController,
+                        decoration: InputDecoration(
+                          labelText: "Caretaker's Email",
+                          prefixIcon: const Icon(Icons.email),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -238,6 +259,8 @@ Future<void> showAddMedicationDialog(BuildContext context) async {
 
                   final String name = nameController.text.trim();
                   final String dose = doseController.text.trim();
+                  final String? caretakerEmail =
+                      notifyCaretaker ? caretakerEmailController.text.trim() : null;
 
                   if (selectedRegimen == 'REG') {
                     final List<DateTime> schedule = [];
@@ -272,6 +295,8 @@ Future<void> showAddMedicationDialog(BuildContext context) async {
                       userId: user.uid,
                       doseSchedule: schedule,
                       nextScheduledUtc: nextScheduled,
+                      notifyCaretaker: notifyCaretaker,
+                      caretakerEmail: caretakerEmail,
                     );
 
                     await FirebaseFirestore.instance
@@ -289,6 +314,8 @@ Future<void> showAddMedicationDialog(BuildContext context) async {
                       isCurrent: true,
                       userId: user.uid,
                       minGapHours: gap,
+                      notifyCaretaker: notifyCaretaker,
+                      caretakerEmail: caretakerEmail,
                     );
                     await FirebaseFirestore.instance
                         .collection('users')

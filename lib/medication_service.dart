@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pillgrimage/medication_model.dart';
+import 'package:pillgrimage/notification_service.dart';
 
 class MedicationService {
   static final FirebaseFirestore _db = FirebaseFirestore.instance;
+  static final NotificationService _notificationService = NotificationService();
 
   /// Deletes all medication logs for the current user and resets the
   /// last_taken_utc field and next_scheduled_utc field for all their medications.
@@ -71,5 +73,34 @@ class MedicationService {
 
     // Commit the batch
     await batch.commit();
+  }
+
+  static Future<void> checkOverdueMedications() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final now = DateTime.now();
+    final twoHoursAgo = now.subtract(const Duration(hours: 2));
+
+    final querySnapshot = await _db
+        .collection('users')
+        .doc(user.uid)
+        .collection('medications')
+        .where('notify_caretaker', isEqualTo: true)
+        .where('next_scheduled_utc', isLessThanOrEqualTo: twoHoursAgo)
+        .where('overdue_notification_sent', isEqualTo: false)
+        .get();
+
+    for (final doc in querySnapshot.docs) {
+      final medication = Medication.fromFirestore(doc);
+      if (medication.caretakerEmail != null) {
+        await _notificationService.sendCaretakerNotification(
+          medication.medName,
+          user.displayName ?? 'the patient',
+          medication.caretakerEmail!,
+        );
+        await doc.reference.update({'overdue_notification_sent': true});
+      }
+    }
   }
 }

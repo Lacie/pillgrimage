@@ -14,6 +14,9 @@ class Medication {
   final int? minGapHours; // For PRN meds
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final bool notifyCaretaker;
+  final String? caretakerEmail;
+  final bool overdueNotificationSent;
 
   Medication({
     this.id,
@@ -29,6 +32,9 @@ class Medication {
     this.minGapHours,
     this.createdAt,
     this.updatedAt,
+    this.notifyCaretaker = false,
+    this.caretakerEmail,
+    this.overdueNotificationSent = false,
   });
 
   factory Medication.fromFirestore(DocumentSnapshot doc) {
@@ -50,6 +56,9 @@ class Medication {
       minGapHours: data['min_gap_hours'] as int?,
       createdAt: (data['__created'] as Timestamp?)?.toDate(),
       updatedAt: (data['__updated'] as Timestamp?)?.toDate(),
+      notifyCaretaker: data['notify_caretaker'] ?? false,
+      caretakerEmail: data['caretaker_email'] as String?,
+      overdueNotificationSent: data['overdue_notification_sent'] ?? false,
     );
   }
 
@@ -67,6 +76,9 @@ class Medication {
       'min_gap_hours': minGapHours,
       '__created': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
       '__updated': FieldValue.serverTimestamp(),
+      'notify_caretaker': notifyCaretaker,
+      'caretaker_email': caretakerEmail,
+      'overdue_notification_sent': overdueNotificationSent,
     };
   }
 }

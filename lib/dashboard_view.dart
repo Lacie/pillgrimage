@@ -278,6 +278,9 @@ class _DashboardViewState extends State<DashboardView> {
               nextScheduledUtc: currentDose,
               doseSchedule: med.doseSchedule,
               lastTakenUtc: med.lastTakenUtc,
+              notifyCaretaker: med.notifyCaretaker,
+              caretakerEmail: med.caretakerEmail,
+              overdueNotificationSent: med.overdueNotificationSent,
             );
 
             if (currentDose.isBefore(now)) {
@@ -296,6 +299,34 @@ class _DashboardViewState extends State<DashboardView> {
         overdueMeds.sort((a, b) => a.nextScheduledUtc!.compareTo(b.nextScheduledUtc!));
         todayMeds.sort((a, b) => a.nextScheduledUtc!.compareTo(b.nextScheduledUtc!));
         tomorrowMeds.sort((a, b) => a.nextScheduledUtc!.compareTo(b.nextScheduledUtc!));
+
+        if (overdueMeds.isNotEmpty) {
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            final Set<String> notifiedMedIds = {};
+            for (final med in overdueMeds) {
+              if (med.id != null && !notifiedMedIds.contains(med.id!)) {
+                if (med.notifyCaretaker &&
+                    med.caretakerEmail != null &&
+                    !med.overdueNotificationSent) {
+                  NotificationService().sendCaretakerNotification(
+                    med.medName,
+                    user.displayName ?? 'the patient',
+                    med.caretakerEmail!,
+                  );
+                  // Update the medication to prevent duplicate notifications
+                  FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user.uid)
+                      .collection('medications')
+                      .doc(med.id)
+                      .update({'overdue_notification_sent': true});
+                  notifiedMedIds.add(med.id!);
+                }
+              }
+            }
+          }
+        }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -310,9 +310,10 @@ class _DashboardViewState extends State<DashboardView> {
                     med.caretakerEmail != null &&
                     !med.overdueNotificationSent) {
                   NotificationService().sendCaretakerNotification(
-                    med.medName,
-                    userName,
-                    med.caretakerEmail!,
+                    medicationName: med.medName,
+                    patientName: userName,
+                    caretakerEmail: med.caretakerEmail!,
+                    medication: med,
                   );
                   // Update the medication to prevent duplicate notifications
                   FirebaseFirestore.instance
@@ -365,7 +366,7 @@ class _DashboardViewState extends State<DashboardView> {
             itemCount: meds.length,
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) => MedicationCard(
-              med: meds[index], 
+              med: meds[index],
               isOverdue: isOverdue,
               showDebugButton: showDebugButton,
             ),

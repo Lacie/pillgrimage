@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pillgrimage/medication_model.dart';
 import 'package:pillgrimage/notification_service.dart';
 
@@ -62,6 +63,13 @@ String formatFrequency(Medication med) {
 Future<void> takeMedication(BuildContext context, Medication med) async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return;
+
+  final ImagePicker picker = ImagePicker();
+  final XFile? image = await picker.pickImage(source: ImageSource.camera);
+
+  if (image == null) {
+    return; // User canceled the camera
+  }
 
   // Check if the medication is scheduled early (more than 1 hour from now)
   bool isEarly = false;
@@ -203,7 +211,6 @@ class MedicationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeColor = isOverdue ? Colors.red : Colors.blue;
-    final user = FirebaseAuth.instance.currentUser;
 
     return GestureDetector(
       onTap: () => takeMedication(context, med),
@@ -278,20 +285,6 @@ class MedicationCard extends StatelessWidget {
                       formatOverdueDuration(med.nextScheduledUtc!),
                       style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.bold),
                     ),
-                  if (med.notifyCaretaker && med.caretakerEmail != null)
-                  IconButton(
-                    onPressed: () {
-                      NotificationService().showTestNotification(
-                        title: "Time for ${med.medName}!",
-                        body: "Reminder: Take your ${med.dosage} dose of ${med.medName}.",
-                        medicationId: med.id!,
-                      );
-                    },
-                    icon: const Icon(Icons.bug_report, size: 18, color: Colors.orange),
-                    tooltip: "Test Notification",
-                    constraints: const BoxConstraints(),
-                    padding: EdgeInsets.zero,
-                  ),
                 ],
               ),
           ],

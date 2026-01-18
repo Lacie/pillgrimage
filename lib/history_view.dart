@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pillgrimage/login_view.dart';
 import 'package:pillgrimage/medication_service.dart';
 import 'package:pillgrimage/medication_widgets.dart';
 
@@ -46,6 +47,16 @@ class HistoryView extends StatelessWidget {
     }
   }
 
+  Future<void> _handleLogout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    if (context.mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginView()),
+        (route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -61,10 +72,20 @@ class HistoryView extends StatelessWidget {
                 "Medication Log",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              TextButton.icon(
-                onPressed: () => _handleReset(context),
-                icon: const Icon(Icons.delete_sweep, color: Colors.red),
-                label: const Text("Clear All", style: TextStyle(color: Colors.red)),
+              Row(
+                children: [
+                  TextButton.icon(
+                    onPressed: () => _handleLogout(context),
+                    icon: const Icon(Icons.logout, color: Colors.grey, size: 20),
+                    label: const Text("Logout", style: TextStyle(color: Colors.grey)),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton.icon(
+                    onPressed: () => _handleReset(context),
+                    icon: const Icon(Icons.delete_sweep, color: Colors.red, size: 20),
+                    label: const Text("Clear All", style: TextStyle(color: Colors.red)),
+                  ),
+                ],
               ),
             ],
           ),

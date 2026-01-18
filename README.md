@@ -30,10 +30,10 @@
 <br />
 <div align="center">
   <a href="https://github.com/Lacie/pillgrimage">
-    <img src="assets/pillgrimage_logo.png" alt="Logo" width="250" height="250">
+    <img src="assets/pillgrimage_logo.png" alt="Logo" width="200" height="200">
   </a>
 
-<h3 align="center">pillgrimage</h3>
+<h3 align="center">pillgr<strong>image</strong></h3>
 
   <p align="center">
     #TODO project_description

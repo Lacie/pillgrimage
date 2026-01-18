@@ -134,7 +134,7 @@ class _LoginViewState extends State<LoginView> {
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("LOGIN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    : const Text("LOG IN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
 
@@ -148,7 +148,7 @@ class _LoginViewState extends State<LoginView> {
                     MaterialPageRoute(builder: (context) => const CreateAccountView()),
                   );
                 },
-                child: const Text("Don't have an account? Register here"),
+                child: const Text("Don't have an account? Sign up here"),
               ),
             ),
           ],

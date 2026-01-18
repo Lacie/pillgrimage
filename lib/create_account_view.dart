@@ -95,7 +95,7 @@ class _CreateAccountState extends State<CreateAccountView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text("Create Account"), centerTitle: true),
+      appBar: AppBar(title: const Text("Sign Up"), centerTitle: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -145,7 +145,7 @@ class _CreateAccountState extends State<CreateAccountView> {
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("REGISTER", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    : const Text("SIGN UP", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
           ],

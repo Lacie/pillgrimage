@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pillgrimage/medication_model.dart';
 import 'package:pillgrimage/send_grid_service.dart';
 
 class NotificationService {
@@ -78,16 +80,24 @@ class NotificationService {
     await _notificationsPlugin.cancel(id);
   }
 
-  Future<void> sendCaretakerNotification(String medicationName, String patientName, String caretakerEmail) async {
+  Future<void> sendCaretakerNotification({
+    required String medicationName,
+    required String patientName,
+    required String caretakerEmail,
+    required Medication medication,
+  }) async {
     final String subject = 'Overdue Medication Alert for $patientName';
-    final String textContent =
-        'This is an automated message to inform you that $patientName has missed a scheduled dose of $medicationName and is now 2 hours overdue.';
 
     try {
+      String htmlContent = await rootBundle.loadString('assets/email_notif.html');
+      htmlContent = htmlContent.replaceAll('[User]', patientName);
+      htmlContent = htmlContent.replaceAll('[Medication Name]', medicationName);
+      htmlContent = htmlContent.replaceAll('[Appointment Time]', medication.nextScheduledUtc.toString());
+
       await _sendGridService.sendEmail(
         toEmail: caretakerEmail,
         subject: subject,
-        textContent: textContent,
+        htmlContent: htmlContent,
       );
       print('Caretaker notification sent for $medicationName.');
     } catch (e) {

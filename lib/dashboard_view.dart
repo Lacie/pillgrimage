@@ -183,7 +183,7 @@ class _DashboardViewState extends State<DashboardView> {
             children: [
               _buildWelcomeHeader(userName),
               const SizedBox(height: 25),
-              _buildDailyTimeline(user?.uid),
+              _buildDailyTimeline(user?.uid, userName),
               const SizedBox(height: 25),
             ],
           ),
@@ -224,7 +224,7 @@ class _DashboardViewState extends State<DashboardView> {
     return DateTime(tomorrow.year, tomorrow.month, tomorrow.day, firstScheduled.hour, firstScheduled.minute);
   }
 
-  Widget _buildDailyTimeline(String? userId) {
+  Widget _buildDailyTimeline(String? userId, String userName) {
     if (userId == null) return const SizedBox.shrink();
 
     return StreamBuilder<QuerySnapshot>(
@@ -310,9 +310,10 @@ class _DashboardViewState extends State<DashboardView> {
                     med.caretakerEmail != null &&
                     !med.overdueNotificationSent) {
                   NotificationService().sendCaretakerNotification(
-                    med.medName,
-                    user.displayName ?? 'the patient',
-                    med.caretakerEmail!,
+                    medicationName: med.medName,
+                    patientName: userName,
+                    caretakerEmail: med.caretakerEmail!,
+                    medication: med,
                   );
                   // Update the medication to prevent duplicate notifications
                   FirebaseFirestore.instance

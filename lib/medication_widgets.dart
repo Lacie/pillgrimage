@@ -113,6 +113,7 @@ Future<void> takeMedication(BuildContext context, Medication med) async {
       'med_id': med.id,
       'user_id': user.uid,
       'med_name': med.medName,
+      'dosage': med.dosage,
       'med_type': med.medType,
       'regimen_type': med.regimenType,
       'taken_at_utc': now,
@@ -190,6 +191,8 @@ class MedicationCard extends StatelessWidget {
   final bool isOverdue;
   final bool showFrequency;
   final bool showNextScheduled;
+  final bool showDebugButton;
+  final VoidCallback? onEdit;
 
   const MedicationCard({
     super.key,
@@ -198,6 +201,8 @@ class MedicationCard extends StatelessWidget {
     this.isOverdue = false,
     this.showFrequency = false,
     this.showNextScheduled = true,
+    this.showDebugButton = true,
+    this.onEdit,
   });
 
   @override
@@ -264,10 +269,10 @@ class MedicationCard extends StatelessWidget {
                 ],
               ),
             ),
-            if (med.regimenType == 'REG' && med.nextScheduledUtc != null)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (med.regimenType == 'REG' && med.nextScheduledUtc != null) ...[
                   if (!isOverdue && showNextScheduled)
                     Text(
                       formatDateTime(med.nextScheduledUtc!),
@@ -278,22 +283,36 @@ class MedicationCard extends StatelessWidget {
                       formatOverdueDuration(med.nextScheduledUtc!),
                       style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.bold),
                     ),
-                  if (med.notifyCaretaker && med.caretakerEmail != null)
-                  IconButton(
-                    onPressed: () {
-                      NotificationService().showTestNotification(
-                        title: "Time for ${med.medName}!",
-                        body: "Reminder: Take your ${med.dosage} dose of ${med.medName}.",
-                        medicationId: med.id!,
-                      );
-                    },
-                    icon: const Icon(Icons.bug_report, size: 18, color: Colors.orange),
-                    tooltip: "Test Notification",
-                    constraints: const BoxConstraints(),
-                    padding: EdgeInsets.zero,
-                  ),
                 ],
-              ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (onEdit != null)
+                      IconButton(
+                        onPressed: onEdit,
+                        icon: const Icon(Icons.edit, size: 18, color: Colors.blueGrey),
+                        tooltip: "Edit Medication",
+                        constraints: const BoxConstraints(),
+                        padding: const EdgeInsets.only(right: 8),
+                      ),
+                    if (showDebugButton && (med.regimenType == 'REG' || (med.notifyCaretaker && med.caretakerEmail != null)))
+                      IconButton(
+                        onPressed: () {
+                          NotificationService().showTestNotification(
+                            title: "Time for ${med.medName}!",
+                            body: "Reminder: Take your ${med.dosage} dose of ${med.medName}.",
+                            medicationId: med.id!,
+                          );
+                        },
+                        icon: const Icon(Icons.bug_report, size: 18, color: Colors.orange),
+                        tooltip: "Test Notification",
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.zero,
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ],
         ),
       ),

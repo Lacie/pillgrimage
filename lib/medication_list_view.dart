@@ -85,6 +85,8 @@ class MedicationListView extends StatelessWidget {
               showLastTaken: true,
               showFrequency: true,
               showNextScheduled: false,
+              showDebugButton: false,
+              onEdit: () => showEditMedicationDialog(context, med),
             );
           },
         );
@@ -94,21 +96,38 @@ class MedicationListView extends StatelessWidget {
 }
 
 Future<void> showAddMedicationDialog(BuildContext context) async {
+  return _showMedicationDialog(context);
+}
+
+Future<void> showEditMedicationDialog(BuildContext context, Medication med) async {
+  return _showMedicationDialog(context, med: med);
+}
+
+Future<void> _showMedicationDialog(BuildContext context, {Medication? med}) async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return;
 
-  final nameController = TextEditingController();
-  final doseController = TextEditingController();
-  final gapController = TextEditingController();
-  final caretakerEmailController = TextEditingController();
+  final isEditing = med != null;
+  final nameController = TextEditingController(text: med?.medName);
+  final doseController = TextEditingController(text: med?.dosage);
+  final gapController = TextEditingController(text: med?.minGapHours?.toString());
+  final caretakerEmailController = TextEditingController(text: med?.caretakerEmail);
 
-  String selectedType = 'RX';
-  String selectedRegimen = 'REG';
+  String selectedType = med?.medType ?? 'RX';
+  String selectedRegimen = med?.regimenType ?? 'REG';
 
   bool takeMorning = false;
   bool takeAfternoon = false;
   bool takeNight = false;
-  bool notifyCaretaker = false;
+  bool notifyCaretaker = med?.notifyCaretaker ?? false;
+
+  if (med?.regimenType == 'REG' && med?.doseSchedule != null) {
+    for (var time in med!.doseSchedule!) {
+      if (time.hour == 8) takeMorning = true;
+      if (time.hour == 13) takeAfternoon = true;
+      if (time.hour == 21) takeNight = true;
+    }
+  }
 
   final Map<String, String> typeOptions = {
     'RX': 'Prescription',
@@ -129,7 +148,46 @@ Future<void> showAddMedicationDialog(BuildContext context) async {
         builder: (context, setDialogState) {
           return AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            title: const Text("Add New Medication", style: TextStyle(fontWeight: FontWeight.bold)),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    isEditing ? "Edit Medication" : "Add New Medication", 
+                    style: const TextStyle(fontWeight: FontWeight.bold)
+                  ),
+                ),
+                if (isEditing)
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.black),
+                    onPressed: () async {
+                      final bool? confirmDelete = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text("Delete Medication?"),
+                          content: Text("Are you sure you want to remove ${med.medName}?"),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+                            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Delete", style: TextStyle(color: Colors.red))),
+                          ],
+                        ),
+                      );
+                      if (confirmDelete == true) {
+                        await FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(user.uid)
+                            .collection('medications')
+                            .doc(med.id)
+                            .delete();
+                        if (context.mounted) {
+                          Navigator.pop(context); // Close edit dialog
+                        }
+                      }
+                    },
+                    tooltip: "Delete Medication",
+                  ),
+              ],
+            ),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -146,7 +204,7 @@ Future<void> showAddMedicationDialog(BuildContext context) async {
                   TextField(
                     controller: doseController,
                     decoration: InputDecoration(
-                      labelText: "Dose (e.g. 500mg)",
+                      labelText: "Dose (e.g. 500 mg)",
                       prefixIcon: const Icon(Icons.scale),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -220,12 +278,12 @@ Future<void> showAddMedicationDialog(BuildContext context) async {
                     },
                   ),
                   const SizedBox(height: 16),
-                  CheckboxListTile(
-                    title: const Text("Notify Caretaker"),
+                  SwitchListTile(
+                    title: const Text("Missed Dose Email Notification", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                     value: notifyCaretaker,
-                    onChanged: (val) => setDialogState(() => notifyCaretaker = val!),
-                    controlAffinity: ListTileControlAffinity.leading,
+                    onChanged: (val) => setDialogState(() => notifyCaretaker = val),
                     dense: true,
+                    contentPadding: EdgeInsets.zero,
                   ),
                   if (notifyCaretaker)
                     Padding(
@@ -233,7 +291,7 @@ Future<void> showAddMedicationDialog(BuildContext context) async {
                       child: TextField(
                         controller: caretakerEmailController,
                         decoration: InputDecoration(
-                          labelText: "Caretaker's Email",
+                          labelText: "Email",
                           prefixIcon: const Icon(Icons.email),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         ),
@@ -244,89 +302,107 @@ Future<void> showAddMedicationDialog(BuildContext context) async {
               ),
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Cancel"),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () async {
-                  if (nameController.text.isEmpty) return;
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey.shade200,
+                        foregroundColor: Colors.black87,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Cancel"),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onPressed: () async {
+                        if (nameController.text.isEmpty) return;
 
-                  final String name = nameController.text.trim();
-                  final String dose = doseController.text.trim();
-                  final String? caretakerEmail =
-                      notifyCaretaker ? caretakerEmailController.text.trim() : null;
+                        final String name = nameController.text.trim();
+                        final String dose = doseController.text.trim();
+                        final String? caretakerEmail =
+                            notifyCaretaker ? caretakerEmailController.text.trim() : null;
 
-                  if (selectedRegimen == 'REG') {
-                    final List<DateTime> schedule = [];
-                    if (takeMorning) schedule.add(DateTime(2026, 1, 1, 8, 0));
-                    if (takeAfternoon) schedule.add(DateTime(2026, 1, 1, 13, 0));
-                    if (takeNight) schedule.add(DateTime(2026, 1, 1, 21, 0));
+                        Map<String, dynamic> medicationData = {
+                          'med_name': name,
+                          'med_type': selectedType,
+                          'regimen_type': selectedRegimen,
+                          'dosage': dose,
+                          'notify_caretaker': notifyCaretaker,
+                          'caretaker_email': caretakerEmail,
+                          '__updated': FieldValue.serverTimestamp(),
+                        };
 
-                    if (schedule.isEmpty) return;
+                        if (selectedRegimen == 'REG') {
+                          final List<DateTime> schedule = [];
+                          if (takeMorning) schedule.add(DateTime(2026, 1, 1, 8, 0));
+                          if (takeAfternoon) schedule.add(DateTime(2026, 1, 1, 13, 0));
+                          if (takeNight) schedule.add(DateTime(2026, 1, 1, 21, 0));
 
-                    schedule.sort((a, b) => a.hour.compareTo(b.hour));
-                    DateTime now = DateTime.now();
-                    DateTime? nextScheduled;
+                          if (schedule.isEmpty) return;
 
-                    for (var time in schedule) {
-                      DateTime candidate = DateTime(now.year, now.month, now.day, time.hour, time.minute);
-                      if (candidate.isAfter(now)) {
-                        nextScheduled = candidate;
-                        break;
-                      }
-                    }
-                    if (nextScheduled == null) {
-                      DateTime tomorrow = now.add(const Duration(days: 1));
-                      nextScheduled = DateTime(tomorrow.year, tomorrow.month, tomorrow.day, schedule.first.hour, schedule.first.minute);
-                    }
+                          schedule.sort((a, b) => a.hour.compareTo(b.hour));
+                          DateTime now = DateTime.now();
+                          DateTime? nextScheduled;
 
-                    final newMed = Medication(
-                      medName: name,
-                      medType: selectedType,
-                      regimenType: selectedRegimen,
-                      dosage: dose,
-                      isCurrent: true,
-                      userId: user.uid,
-                      doseSchedule: schedule,
-                      nextScheduledUtc: nextScheduled,
-                      notifyCaretaker: notifyCaretaker,
-                      caretakerEmail: caretakerEmail,
-                    );
+                          for (var time in schedule) {
+                            DateTime candidate = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+                            if (candidate.isAfter(now)) {
+                              nextScheduled = candidate;
+                              break;
+                            }
+                          }
+                          if (nextScheduled == null) {
+                            DateTime tomorrow = now.add(const Duration(days: 1));
+                            nextScheduled = DateTime(tomorrow.year, tomorrow.month, tomorrow.day, schedule.first.hour, schedule.first.minute);
+                          }
 
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(user.uid)
-                        .collection('medications')
-                        .add(newMed.toFirestore());
-                  } else {
-                    final int? gap = int.tryParse(gapController.text);
-                    final newMed = Medication(
-                      medName: name,
-                      medType: selectedType,
-                      regimenType: selectedRegimen,
-                      dosage: dose,
-                      isCurrent: true,
-                      userId: user.uid,
-                      minGapHours: gap,
-                      notifyCaretaker: notifyCaretaker,
-                      caretakerEmail: caretakerEmail,
-                    );
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(user.uid)
-                        .collection('medications')
-                        .add(newMed.toFirestore());
-                  }
+                          medicationData['dose_schedule'] = schedule.map((e) => Timestamp.fromDate(e)).toList();
+                          medicationData['next_scheduled_utc'] = Timestamp.fromDate(nextScheduled);
+                          medicationData['min_gap_hours'] = null;
+                        } else {
+                          final int? gap = int.tryParse(gapController.text);
+                          medicationData['min_gap_hours'] = gap;
+                          medicationData['dose_schedule'] = null;
+                          medicationData['next_scheduled_utc'] = null;
+                        }
 
-                  if (context.mounted) Navigator.pop(context);
-                },
-                child: const Text("Save Medication"),
+                        if (isEditing) {
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(user.uid)
+                              .collection('medications')
+                              .doc(med.id)
+                              .update(medicationData);
+                        } else {
+                          medicationData['is_current'] = true;
+                          medicationData['user_id'] = user.uid;
+                          medicationData['__created'] = FieldValue.serverTimestamp();
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(user.uid)
+                              .collection('medications')
+                              .add(medicationData);
+                        }
+
+                        if (context.mounted) Navigator.pop(context);
+                      },
+                      child: const Text("Save"),
+                    ),
+                  ),
+                ],
               ),
             ],
           );

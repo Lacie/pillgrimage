@@ -58,7 +58,7 @@ class HistoryView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "Logged Doses",
+                "Medication Log",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               TextButton.icon(
@@ -116,6 +116,8 @@ class HistoryView extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final log = logs[index].data() as Map<String, dynamic>;
                   final takenAt = (log['taken_at_utc'] as Timestamp?)?.toDate();
+                  final String medName = log['med_name'] ?? 'Unknown Med';
+                  final String? dosage = log['dosage'];
                   
                   return Container(
                     padding: const EdgeInsets.all(16),
@@ -133,7 +135,7 @@ class HistoryView extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                log['med_name'] ?? 'Unknown Med',
+                                medName,
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               if (takenAt != null)
@@ -144,6 +146,15 @@ class HistoryView extends StatelessWidget {
                             ],
                           ),
                         ),
+                        if (dosage != null)
+                          Text(
+                            dosage,
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                       ],
                     ),
                   );

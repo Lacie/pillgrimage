@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'api_keys.dart';
 
 class SendGridService {
-  static const String _apiKey = '??? APPI KEY PLEASE';
+  static const String _apiKey = sendGridApiKey;
   static const String _url = 'https://api.sendgrid.com/v3/mail/send';
 
   Future<void> sendEmail({

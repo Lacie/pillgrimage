@@ -14,6 +14,7 @@ class NotificationService {
   Stream<String?> get onNotificationTap => _onNotificationTap.stream;
 
   Future<void> init() async {
+    // Using 'launcher_icon' which we've confirmed is in the drawable folder
     const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('launcher_icon');
     const InitializationSettings settings = InitializationSettings(android: androidSettings);
     
@@ -55,17 +56,19 @@ class NotificationService {
       fullScreenIntent: true,
       audioAttributesUsage: AudioAttributesUsage.alarm,
       visibility: NotificationVisibility.public,
+      // Explicitly set the small icon to the app logo in the drawable folder
+      icon: 'launcher_icon',
     );
 
     const NotificationDetails details = NotificationDetails(android: androidDetails);
 
     try {
       await _notificationsPlugin.show(
-        1, // Use a fixed ID so we can cancel it later if needed
+        1, 
         title,
         body,
         details,
-        payload: medicationId, // Pass the medication ID as payload
+        payload: medicationId,
       );
     } catch (e) {
       print("Error showing notification: $e");
